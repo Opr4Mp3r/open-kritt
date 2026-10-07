@@ -12,8 +12,8 @@ import { useResourceImport } from '../lib/useResourceImport.js';
 export default function SeverityRankers() {
   const navigate = useNavigate();
   usePageChrome(
-    [{ label: 'Severity rankers', active: true }],
-    { label: '+ New severity ranker', to: '/severity-rankers/new' },
+    [{ label: '严重性排序规则', active: true }],
+    { label: '+ 新建严重性排序规则', to: '/severity-rankers/new' },
     []
   );
   const { data, loading, error, reload } = useFetch(() => api.severityRankers(), []);
@@ -21,7 +21,7 @@ export default function SeverityRankers() {
   const rankerPages = usePagination(rankers, { pageSize: 9 });
   const resourceImport = useResourceImport({
     resourceType: 'severityRanker',
-    label: 'Severity ranker',
+    label: '严重性排序规则',
     create: api.createSeverityRanker,
     onImported: (ranker) => navigate(`/severity-rankers/${ranker.id}`),
   });
@@ -30,21 +30,20 @@ export default function SeverityRankers() {
     <div style={{ padding: '30px 32px', maxWidth: 1180 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>Severity rankers</div>
+          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>严重性排序规则</div>
           <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 3 }}>
-            Reusable rule-sets that tell the model how to rank a finding — critical, high, medium, low or informational.
-            Attach one or more when you create a scan.
+            可复用的规则集，用于指导模型如何评定发现结果的严重性：严重、高、中、低或提示信息。创建扫描时可附加一个或多个规则集。
           </div>
         </div>
         <Button variant="ghost" disabled={resourceImport.importing} onClick={resourceImport.chooseFile}>
-          {resourceImport.importing ? 'Importing…' : 'Import JSON'}
+          {resourceImport.importing ? '正在导入…' : '导入 JSON'}
         </Button>
       </div>
       <input
         ref={resourceImport.inputRef}
         type="file"
         accept=".json,application/json"
-        aria-label="Import severity ranker JSON"
+        aria-label="导入严重性排序规则 JSON"
         onChange={resourceImport.importFile}
         style={{ display: 'none' }}
       />
@@ -61,9 +60,9 @@ export default function SeverityRankers() {
       {error && <ErrorState error={error} onRetry={reload} />}
       {data && data.length === 0 && (
         <EmptyState
-          title="No severity rankers yet"
-          sub="Write the rules by which findings should be ranked, then attach them to scans."
-          action={<Button to="/severity-rankers/new">+ New severity ranker</Button>}
+          title="还没有严重性排序规则"
+          sub="编写发现结果的分级规则，再将规则附加到扫描任务。"
+          action={<Button to="/severity-rankers/new">+ 新建严重性排序规则</Button>}
         />
       )}
       {data && data.length > 0 && (
@@ -86,7 +85,7 @@ export default function SeverityRankers() {
                     flexDirection: 'column',
                   }}
                 >
-                  <CardLinkOverlay to={`/severity-rankers/${r.id}`} label={`Open severity ranker ${r.name}`} />
+                  <CardLinkOverlay to={`/severity-rankers/${r.id}`} label={`打开严重性排序规则 ${r.name}`} />
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                     <div className="mono" style={{ fontWeight: 600, fontSize: 14.5 }}>
                       {r.name}
@@ -94,15 +93,15 @@ export default function SeverityRankers() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 'none' }}>
                       <Button
                         variant="ghost"
-                        aria-label={`Export ${r.name}`}
-                        title="Export severity ranker as JSON"
+                        aria-label={`导出 ${r.name}`}
+                        title="将严重性排序规则导出为 JSON"
                         onClick={(event) => {
                           event.stopPropagation();
                           downloadResourceExport('severityRanker', r);
                         }}
                         style={{ position: 'relative', zIndex: 2, height: 27, padding: '0 9px', fontSize: 11.5 }}
                       >
-                        Export
+                        导出
                       </Button>
                       <span
                         className="mono"
@@ -115,7 +114,7 @@ export default function SeverityRankers() {
                           flex: 'none',
                         }}
                       >
-                        {count} rule{count === 1 ? '' : 's'}
+                        {count} 条规则
                       </span>
                     </div>
                   </div>
@@ -126,7 +125,7 @@ export default function SeverityRankers() {
               );
             })}
           </div>
-          <Pagination {...rankerPages} itemLabel="rankers" />
+          <Pagination {...rankerPages} itemLabel="规则集" />
         </>
       )}
     </div>

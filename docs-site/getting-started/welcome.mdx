@@ -1,110 +1,88 @@
 ---
-title: "Welcome to open·kritt"
-description: "Orchestrate AI agents to find real vulnerabilities in code."
+title: "欢迎使用 open·kritt"
+description: "编排 AI 智能体，发现代码中的真实漏洞。"
 ---
 
-open·kritt is an open-source, AI-driven security research platform. Instead of pointing
-a model at a whole repository and hoping, you break the work into small, well-defined
-tasks, run them across AI agents in parallel, and turn the results into de-duplicated,
-ranked findings you can validate and enrich with per-finding post-scripts.
+open·kritt 是一个开源的 AI 安全研究平台。你无需让模型漫无目的地扫描整个代码库，而是将工作拆分为边界清晰的小任务，由多个 AI 智能体并行执行，再把结果整理为去重、分级的发现项，并通过逐项运行的后处理脚本进行验证和补充。
 
-<Frame caption="The overview dashboard - blueprints, scans, and findings at a glance.">
-  <img src="/images/overview.png" alt="open·kritt overview dashboard" />
+<Frame caption="概览仪表板：一览扫描方案、扫描任务和发现结果。">
+  <img src="/images/overview.png" alt="open·kritt 概览仪表板" />
 </Frame>
 
-## Who it's for
+## 适用人群
 
 <CardGroup cols={2}>
-  <Card title="Security researchers" icon="magnifying-glass">
-    Fold AI into your research process without giving up control over prompts, data, or
-    models.
+  <Card title="安全研究人员" icon="magnifying-glass">
+    将 AI 融入研究流程，同时保留对提示词、数据和模型的控制权。
   </Card>
-  <Card title="Security-minded developers" icon="shield-halved">
-    Get AI help writing - and auditing - secure code against a repository you own.
+  <Card title="重视安全的开发者" icon="shield-halved">
+    使用 AI 编写安全代码，并审查你拥有的代码库。
   </Card>
 </CardGroup>
 
 <Note>
-  **From the team at Kritt.** We built and used this system internally to find real,
-  high-impact vulnerabilities, earning **over $1,500,000 in bug-bounty payouts** under the
-  researcher name **Blockian**
+  **来自 Kritt 团队。** 我们曾在内部构建并使用该系统寻找真实且影响重大的漏洞，并以研究者 **Blockian** 的名义获得了**超过 1,500,000 美元的漏洞赏金**
   ([Immunefi](https://immunefi.com/profile/Blockian/) ·
   [HackenProof](https://hackenproof.com/hackers/Blockian) ·
   [blockian.xyz](https://blockian.xyz) · [@Kritt_AI](https://x.com/Kritt_AI)).
-  open·kritt is the open-source distillation of that workflow.
+  open·kritt 是该工作流程的开源精简版。
 </Note>
 
-## The idea
+## 设计理念
 
-If you point an AI at a whole repository and ask "find the vulnerabilities," it usually
-won't. But if you point it at **one function in one file** and ask a focused question, it
-often will. The most effective way to use AI for security research is to give it small,
-well-defined, digestible tasks.
+如果你让 AI 扫描整个代码库并寻找漏洞，它通常难以完成任务。但如果你让它分析**一个文件中的一个函数**并提出聚焦的问题，往往更容易得到有效结果。使用 AI 进行安全研究的有效方式，是把工作拆分成小而明确、易于处理的任务。
 
-open·kritt is deliberately opinionated. It gives you freedom where it matters - your
-prompts, your data, your models - and enforces structure where it pays off: a fixed
-finding schema, automatic de-duplication, per-finding follow-up scripts, and severity
-ranking.
+open·kritt 有意采用明确的设计取舍：在提示词、数据和模型等关键部分给予你自由，同时通过固定的发现项结构、自动去重、逐项后续脚本和严重性排序来保证结果一致。
 
-You do not have to begin with a blank workflow. open·kritt includes a
-[built-in entrypoint-flow workflow](/workflows/built-in-workflows) that you can inspect,
-run, and adapt. An open marketplace for sharing and discovering community workflows is
-planned.
+你不必从空白工作流开始。open·kritt 内置了[入口流程工作流](/workflows/built-in-workflows)，你可以查看、运行并按需修改。未来计划开放工作流市场，供社区分享和发现工作流。
 
-## How the pieces fit together
+## 各组成部分如何协作
 
 <CardGroup cols={2}>
-  <Card title="Workflows" icon="diagram-project" href="/workflows/steps">
-    A reusable blueprint: a tree of prompt **steps** the engine runs, feeding each step's
-    output into the next.
+  <Card title="工作流" icon="diagram-project" href="/workflows/steps">
+    可复用的扫描方案：由引擎依次执行的一组提示词**步骤**构成，每一步的输出会传递给后续步骤。
   </Card>
-  <Card title="Post-scripts" icon="list-check" href="/post-scripts/difference-from-workflow">
-    Per-finding follow-up that runs after the workflow - validate a finding, build a PoC,
-    or write a report.
+  <Card title="后处理脚本" icon="list-check" href="/post-scripts/difference-from-workflow">
+    工作流结束后逐条处理发现项：验证问题、构建 PoC 或编写报告。
   </Card>
-  <Card title="Severity rankers" icon="signal" href="/severity-ranker/why">
-    Markdown rules that tell the model how to prioritize findings for your program.
+  <Card title="严重性排序规则" icon="signal" href="/severity-ranker/why">
+    使用 Markdown 规则指导模型，按照你的计划对发现项排序。
   </Card>
-  <Card title="Scans" icon="radar" href="/scans/create">
-    A single run of a workflow against a target repository, with your chosen model and
-    harness.
+  <Card title="扫描" icon="radar" href="/scans/create">
+    使用你选择的模型和运行框架，对目标代码库执行一次工作流。
   </Card>
 </CardGroup>
 
-## What happens in a scan
+## 扫描过程
 
 <Steps>
-  <Step title="Run the workflow">
-    Steps execute in depth order and turn focused analysis tasks into candidate findings.
+  <Step title="运行工作流">
+    按深度顺序执行各步骤，将聚焦的分析任务转化为候选发现项。
   </Step>
-  <Step title="Combine and prioritize">
-    open·kritt automatically clusters duplicates and ranks the canonical findings using
-    the scan's severity rules.
+  <Step title="合并并排序">
+    open·kritt 会自动聚类重复项，并根据扫描所用的严重性规则为规范发现项排序。
   </Step>
-  <Step title="Validate and enrich">
-    One or more post-scripts run on each canonical finding to add verdicts, reports,
-    proofs of concept, and other structured context. Post-scripts enrich the result; they
-    do not silently delete it.
+  <Step title="验证并补充">
+    针对每条规范发现项运行一个或多个后处理脚本，以添加判定、报告、概念验证和其他结构化信息。后处理脚本会补充结果，不会悄悄将其删除。
   </Step>
 </Steps>
 
-## Next steps
+## 下一步
 
 <CardGroup cols={2}>
-  <Card title="Explore built-in workflows" icon="boxes-stacked" href="/workflows/built-in-workflows">
-    Start from preinstalled research patterns and learn about the upcoming open workflow
-    marketplace.
+  <Card title="了解内置工作流" icon="boxes-stacked" href="/workflows/built-in-workflows">
+    从预装的研究流程开始，并了解即将推出的开放工作流市场。
   </Card>
-  <Card title="Installation and setup" icon="terminal" href="/getting-started/installation-and-setup">
-    Install the Docker stack and configure model access through the guided CLI.
+  <Card title="安装和设置" icon="terminal" href="/getting-started/installation-and-setup">
+    安装 Docker 服务栈，并通过交互式命令行配置模型访问方式。
   </Card>
-  <Card title="AI provider setup" icon="key" href="/ai-provider-setup/overview">
-    Configure Codex, Claude Code, or OpenRouter and understand how each option is billed.
+  <Card title="AI 提供商配置" icon="key" href="/ai-provider-setup/overview">
+    配置 Codex、Claude Code 或 OpenRouter，并了解各选项的计费方式。
   </Card>
-  <Card title="Run your first scan" icon="rocket" href="/first-scan/workflow">
-    Build a workflow, add a post-script and a ranker, and scan a repo end to end.
+  <Card title="执行首次扫描" icon="rocket" href="/first-scan/workflow">
+    构建工作流，添加后处理脚本和排序规则，然后对代码库进行完整扫描。
   </Card>
-  <Card title="Self-hosted vs managed" icon="scale-balanced" href="/getting-started/self-hosted-vs-managed">
-    Understand what you get from the open-source project versus a managed Kritt scan.
+  <Card title="自托管与托管服务" icon="scale-balanced" href="/getting-started/self-hosted-vs-managed">
+    了解开源项目与 Kritt 托管扫描服务各自提供的功能。
   </Card>
 </CardGroup>

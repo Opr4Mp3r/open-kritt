@@ -6,7 +6,7 @@ describe('sidebar community links', () => {
   it('renders every project and contact destination', () => {
     const html = renderToStaticMarkup(<CommunityLinks />);
 
-    expect(html).toContain('aria-label="Project and community links"');
+    expect(html).toContain('aria-label="项目与社区链接"');
     expect(html).toContain('href="https://github.com/Kritt-ai/open-kritt"');
     expect(html).toContain('href="https://x.com/Kritt_AI"');
     expect(html).toContain('href="https://kritt.ai/"');

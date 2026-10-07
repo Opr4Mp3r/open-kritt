@@ -2,24 +2,24 @@ import { FullscreenTerminal, renderNoticeScreen, TerminalCancelledError } from '
 
 const MAIN_MENU = Object.freeze({
   'Create scan': {
-    description: 'Build and launch a scan with a guided setup',
+    description: '通过引导配置来创建并启动扫描',
     tone: 'accent',
   },
   'Inspect scans': {
-    description: 'Review progress, errors, exports, and controls',
+    description: '查看进度、错误、导出内容和控制选项',
     tone: 'info',
   },
   'Import portable resource': {
-    description: 'Add a workflow, post-script, skill, or ranker',
+    description: '添加工作流、后处理脚本、技能或排序规则',
   },
   'Configure settings': {
-    description: 'Tune live engine worker and storage settings',
+    description: '调整引擎工作进程和存储设置',
   },
   'Check service health': {
-    description: 'Verify the backend connection',
+    description: '检查后端连接状态',
     tone: 'success',
   },
-  Exit: { description: 'Return to your shell', tone: 'dim' },
+  Exit: { description: '返回终端', tone: 'dim' },
 });
 
 const STATUS_TONES = Object.freeze({
@@ -169,9 +169,9 @@ export class FullscreenHeadlessPrompter {
       const trimmed = value.trim();
       if (!required || trimmed) return trimmed || `${defaultValue ?? ''}`;
       await this.notice({
-        title: 'A value is required',
+        title: '此项为必填',
         subtitle: this.section,
-        message: 'Enter a value to continue, or press Esc to cancel this flow.',
+        message: '请输入一个值以继续，或按 Esc 取消此流程。',
       });
     }
   }

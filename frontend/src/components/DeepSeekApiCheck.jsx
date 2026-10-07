@@ -17,16 +17,16 @@ export default function DeepSeekApiCheck({ configured }) {
     try {
       if (check) {
         await api.checkDeepSeekModel(model);
-        setMessage(`Text API check succeeded for ${model}.`);
+        setMessage(`模型 ${model} 的文本 API 检查成功。`);
       } else {
         const result = await api.deepSeekModels();
         setModels(result.models);
         // Keep an exact choice visible if a refreshed catalog no longer lists it.
         setModel((current) => current || result.models[0]?.id || '');
-        if (!result.models.length) setMessage('DeepSeek returned no available models.');
+        if (!result.models.length) setMessage('DeepSeek 未返回可用模型。');
       }
     } catch (nextError) {
-      setError(nextError.message || 'Could not complete the DeepSeek request.');
+      setError(nextError.message || '无法完成 DeepSeek 请求。');
     } finally {
       setBusy(false);
     }
@@ -35,17 +35,17 @@ export default function DeepSeekApiCheck({ configured }) {
   const listed = models.some((item) => item.id === model);
   return (
     <div className="account-empty" aria-busy={busy}>
-      <p>Load the live model list or run a small API check. DeepSeek scans and draft generation use Codex.</p>
+      <p>加载实时模型列表或运行简短的 API 检查。DeepSeek 扫描和草稿生成使用 Codex。</p>
       {!configured ? (
-        <p>Add a DeepSeek API key to load models.</p>
+        <p>添加 DeepSeek API 密钥以加载模型。</p>
       ) : (
         <>
           <Button variant="ghost" onClick={() => run(false)} disabled={busy}>
-            {busy ? 'Waiting…' : 'Load DeepSeek models'}
+            {busy ? '请稍候…' : '加载 DeepSeek 模型'}
           </Button>
           {(models.length > 0 || model) && (
             <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
-              <label htmlFor={id}>Model for API check</label>
+              <label htmlFor={id}>用于 API 检查的模型</label>
               <select
                 id={id}
                 value={model}
@@ -58,7 +58,7 @@ export default function DeepSeekApiCheck({ configured }) {
               >
                 {model && !listed && (
                   <option value={model} disabled>
-                    {model} (unavailable)
+                    {model}（不可用）
                   </option>
                 )}
                 {models.map((item) => (
@@ -67,9 +67,9 @@ export default function DeepSeekApiCheck({ configured }) {
                   </option>
                 ))}
               </select>
-              <p>The check sends “Reply with OK.” to DeepSeek and may incur a small API charge.</p>
+              <p>检查会向 DeepSeek 发送“Reply with OK.”，可能产生少量 API 费用。</p>
               <Button variant="ghost" onClick={() => run(true)} disabled={busy || !listed}>
-                Run text API check
+                运行文本 API 检查
               </Button>
             </div>
           )}

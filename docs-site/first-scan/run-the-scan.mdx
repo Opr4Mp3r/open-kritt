@@ -1,84 +1,54 @@
 ---
-title: "Run the scan"
-description: "Point your workflow at a repository and let the engine run every step."
+title: "运行扫描"
+description: "将工作流应用于代码库，让引擎执行所有步骤。"
 ---
 
-A **scan** ties everything together: it runs one workflow against a target repository with
-the model, harness, post-scripts, and rankers you choose. The engine queues it and runs
-every step.
+**扫描**会将所有配置组合起来：使用你选择的模型、运行框架、后处理脚本和排序规则，在目标代码库上运行一个工作流。引擎会将扫描加入队列并依次执行所有步骤。
 
-<Frame caption="Creating a new scan: pick a workflow, choose a target, and configure the run.">
-  <img src="/images/create-scan.png" alt="open·kritt new scan form" />
+<Frame caption="创建扫描：选择工作流和目标，并配置运行参数。">
+  <img src="/images/create-scan.png" alt="open·kritt 新建扫描表单" />
 </Frame>
 
-## Create the scan
+## 创建扫描
 
-Open **Scans → New scan** and work down the form:
+打开**扫描 → 新建扫描**，然后按表单从上到下填写：
 
 <Steps>
-  <Step title="Choose a workflow">
-    Pick the workflow you built or one of the
-    [built-in workflows](/workflows/built-in-workflows). The scan will run its steps in
-    depth order.
+  <Step title="选择工作流">
+    选择你创建的工作流或[内置工作流](/workflows/built-in-workflows)。扫描会按深度顺序执行其中的步骤。
   </Step>
-  <Step title="Choose a target">
-    Toggle **Remote** or **Local**. For remote, enter a GitHub `owner/repo` and a
-    `commit_sha` (defaults to `HEAD`). For local, pick a folder you've mounted. Set
-    `repo_scope` to describe what to focus on (defaults to "full repository").
+  <Step title="选择目标">
+    切换**远程**或**本地**。远程仓库需填写 GitHub `owner/repo` 和 `commit_sha`（默认为 `HEAD`）；本地仓库则选择已挂载的目录。通过 `repo_scope` 指定分析范围（默认为整个代码库）。
   </Step>
-  <Step title="Add dependencies and configuration (optional)">
-    Add dependency repos to be checked out alongside the target, and a JSON
-    **configuration** blob the agents can read. To give every task a cumulative second
-    attempt, use `{"repeat_runs": 2}`. The second execution of each concrete task sees
-    only that task's earlier output and returns new records to append; leave it at `1` for
-    the cheapest first scan.
+  <Step title="添加依赖项和配置（可选）">
+    添加要与目标一同检出的依赖代码库，以及智能体可读取的 JSON **配置**。如需让每项任务再执行一次，可使用 `{"repeat_runs": 2}`。每个具体任务的第二次执行只会看到该任务先前的输出，并返回待追加的新记录；首次扫描建议保持为 `1`，以降低成本。
   </Step>
-  <Step title="Pick model, provider, and harness">
-    Choose a model from the searchable catalog for the selected provider. OpenRouter loads
-    choices from its authenticated model catalog and also accepts an exact custom
-    `author/model` ID when needed. Then choose a compatible harness and thinking effort.
-    The form defaults Codex to the Codex harness and Anthropic/OpenRouter to Claude Code. If
-    no provider is listed, complete
-    [AI provider setup](/ai-provider-setup/overview) and recreate the stack.
-    Keep **One model for all depths** for the normal path. Choose **Customize by depth**
-    when, for example, discovery should use a faster model and deeper investigation
-    should use a stronger one. Post-processing uses the scan model by default; choose
-    **Use different model** when final deduplication, ranking, and enrichment should run
-    with a separate model tuple.
+  <Step title="选择模型、提供商和运行框架">
+    从所选提供商的可搜索目录中选择模型。OpenRouter 会从经过身份验证的模型目录加载选项，必要时也可填写准确的自定义
+    `author/model` ID。然后选择兼容的运行框架和思考强度。表单默认将 Codex 配置为 Codex 框架，将 Anthropic/OpenRouter 配置为 Claude Code。如果列表中没有提供商，请完成 [AI 提供商配置](/ai-provider-setup/overview)并重建服务栈。常规情况下保留**所有深度使用同一模型**。例如，你可以选择**按深度自定义**，让发现阶段使用较快的模型，而深入调查阶段使用能力更强的模型。默认情况下，后处理使用扫描模型；若希望最终去重、排序和补充信息使用另一组模型配置，请选择**使用不同模型**。
   </Step>
-  <Step title="Attach skills, post-scripts, and rankers">
-    Select any agent skills, one or more post-scripts (the first is the primary), and one
-    or more severity rankers plus optional scan-specific rules.
+  <Step title="附加技能、后处理脚本和排序规则">
+    选择智能体技能、一个或多个后处理脚本（第一个为主脚本），以及一个或多个严重性排序规则，还可以添加扫描专属规则。
   </Step>
-  <Step title="Launch">
-    Submit. If another scan is active, choose **Start immediately** to run concurrently
-    or **Queue** to wait until active scans finish.
+  <Step title="启动">
+    提交扫描。如果已有其他扫描正在运行，可选择**立即启动**以并行运行，或选择**加入队列**，等待当前扫描结束后再运行。
   </Step>
 </Steps>
 
-The normal path is `pending`, optional `prewarming_cache`, `running`, `post_processing`,
-then `completed`. A queued scan starts when the engine is idle. A temporarily
-`rate_limited` scan retries automatically without discarding completed work. See
-[errors and re-runs](/scan-results/errors-and-re-runs).
+正常流程为 `pending`、可选的 `prewarming_cache`、`running`、`post_processing`，最后到达 `completed`。引擎空闲时会启动排队中的扫描。扫描若暂时进入 `rate_limited` 状态，会自动重试并保留已完成的工作。详见[错误与重新运行](/scan-results/errors-and-re-runs)。
 
 <Warning>
-  Each workflow branch, repeat, ranking batch, and post-script consumes model calls.
-  Start with one repeat and a narrow `repo_scope`, then expand after the workflow produces
-  useful results.
+  工作流分支、重复运行、排序批次和后处理脚本都会消耗模型调用。建议先设置一次运行并使用较小的 `repo_scope`；确认工作流能产生有效结果后再逐步扩大范围。
 </Warning>
 
-## Watch it run
+## 查看运行进度
 
-The scan detail page shows live status, active jobs, and any errors. As findings land,
-they appear in the list - ranked by your ranker, enriched by your post-scripts.
+扫描详情页会显示实时状态、活动任务和错误信息。发现项生成后会出现在列表中，并根据排序规则排序、由后处理脚本补充信息。
 
 <Info>
-  Each part of this form has its own page: [local vs remote](/scans/local-vs-remote),
-  [dependencies](/scans/dependencies), [configuration](/scans/configuration),
-  [model and harness](/scans/model-and-harness), and more under [Scans](/scans/create).
+  表单的各个部分均有单独说明：[本地与远程](/scans/local-vs-remote)、[依赖项](/scans/dependencies)、[配置](/scans/configuration)、[模型与运行框架](/scans/model-and-harness)，以及[扫描](/scans/create)章节中的其他内容。
 </Info>
 
-## View the results
+## 查看结果
 
-When the scan finishes, open any finding to see its full write-up, proof of concept, and
-post-script output. See [Scan results](/scan-results/how-to-view) for the tour.
+扫描结束后，打开任意发现项即可查看完整说明、概念验证和后处理脚本输出。详见[扫描结果](/scan-results/how-to-view)。

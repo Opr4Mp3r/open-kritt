@@ -1,111 +1,80 @@
 ---
-title: "Choose an AI provider"
-description: "Configure one supported model provider before creating workflows, post-scripts, or scans."
+title: "选择 AI 提供商"
+description: "创建工作流、后处理脚本或扫描前，先配置一种受支持的模型提供商。"
 ---
 
-open·kritt needs **one** AI access method. You can configure more than one and choose
-between them per run, but a single working provider is enough to start.
+open·kritt 需要**一种** AI 访问方式。你可以配置多种方式，并在每次运行时选择其中一种；开始使用时，只需确保其中一个提供商可用。
 
-| Provider | Access method | Model input |
+| 提供商 | 访问方式 | 模型输入方式 |
 | --- | --- | --- |
-| **Codex** | ChatGPT/Codex login or an OpenAI Platform key | Account-specific picker |
-| **Claude** | Claude subscription login or `ANTHROPIC_API_KEY` | Subscription aliases or account-specific picker |
-| **DeepSeek** | `DEEPSEEK_API_KEY` | Searchable authenticated catalog |
-| **OpenRouter** | `OPENROUTER_API_KEY` | Searchable authenticated catalog, with an exact-ID fallback |
-| **xAI** | Grok device login or `XAI_API_KEY` | Searchable authenticated catalog (with key), with an exact-ID fallback |
+| **Codex** | ChatGPT/Codex 登录或 OpenAI Platform 密钥 | 按账户显示可用模型 |
+| **Claude** | Claude 订阅登录或 `ANTHROPIC_API_KEY` | 订阅别名或按账户显示可用模型 |
+| **DeepSeek** | `DEEPSEEK_API_KEY` | 可搜索的认证模型目录 |
+| **OpenRouter** | `OPENROUTER_API_KEY` | 可搜索的认证模型目录，也支持输入准确的模型 ID |
+| **xAI** | Grok 设备登录或 `XAI_API_KEY` | 使用密钥时显示可搜索的认证模型目录，也支持输入准确的模型 ID |
 
 <CardGroup cols={2}>
   <Card title="Codex" icon="terminal" href="/ai-provider-setup/codex">
-    Use the recommended ChatGPT device login or an OpenAI Platform API key.
+    使用推荐的 ChatGPT 设备登录，或使用 OpenAI Platform API 密钥。
   </Card>
   <Card title="Claude Code" icon="sparkles" href="/ai-provider-setup/claude-code">
-    Sign in with an eligible Claude subscription, or use an Anthropic API key.
+    使用符合条件的 Claude 订阅登录，或使用 Anthropic API 密钥。
   </Card>
   <Card title="DeepSeek" icon="code" href="/ai-provider-setup/deepseek">
-    Use a DeepSeek API key with the Codex harness.
+    在 Codex 运行框架中使用 DeepSeek API 密钥。
   </Card>
   <Card title="OpenRouter" icon="route" href="/ai-provider-setup/openrouter">
-    Use one key to access compatible models through OpenRouter.
+    使用一个密钥，通过 OpenRouter 访问兼容模型。
   </Card>
   <Card title="xAI" icon="bolt" href="/ai-provider-setup/xai">
-    Use Grok device login or an xAI API key with the Grok Build harness.
+    在 Grok Build 运行框架中使用 Grok 设备登录或 xAI API 密钥。
   </Card>
 </CardGroup>
 
-## Provider visibility and API checks
+## 提供商可见性与 API 检查
 
-New browser profiles show all providers. Scan and draft-generation selectors list
-**Codex**, **Claude Code**, **DeepSeek**, **OpenRouter**, and **xAI**; providers without
-an account are visible but disabled.
-Use **Show or hide providers** in Accounts or beside a provider selector to customize
-the list. Existing browser preferences are preserved, so re-enable any providers
-you previously hid there. Hiding does not remove accounts or change saved selections;
-an existing selected provider remains visible in its selector.
+新的浏览器配置会显示所有提供商。扫描和草稿生成选择器会列出 **Codex**、**Claude Code**、**DeepSeek**、**OpenRouter** 和 **xAI**；没有账户的提供商仍会显示，但无法选择。
+你可以在账户页面或提供商选择器旁使用**显示或隐藏提供商**来自定义列表。现有浏览器偏好会保留，因此如果之前隐藏了提供商，需要手动重新启用。隐藏不会删除账户或更改已保存的选择；已选中的提供商仍会在其选择器中显示。
 
-[DeepSeek](/ai-provider-setup/deepseek) uses a live model catalog and the Codex harness
-for scans and draft generation. Accounts also offers a short text API check.
+[DeepSeek](/ai-provider-setup/deepseek) 使用实时模型目录，并在扫描和草稿生成中使用 Codex 运行框架。账户页面还提供简短的文本 API 检查。
 
-## Common setup flow
+## 常见配置流程
 
 <Steps>
-  <Step title="Open setup">
-    From the repository root, run:
+  <Step title="打开设置">
+    在仓库根目录运行：
 
     ```bash
     ./kritt setup
     ```
   </Step>
-  <Step title="Choose one access method">
-    Select **Codex login**, **OpenAI API key**, **Codex API key**, **Anthropic API key**,
-    **DeepSeek API key**, **OpenRouter API key**, or **xAI API key**. Follow the provider
-    guide above to obtain the correct credential. The CLI configures keys and Codex login;
-    Claude and xAI device login, plus DeepSeek/OpenRouter/xAI key management, are also
-    available from the running application's **Accounts** page.
+  <Step title="选择一种访问方式">
+    选择 **Codex 登录**、**OpenAI API 密钥**、**Codex API 密钥**、**Anthropic API 密钥**、**DeepSeek API 密钥**、**OpenRouter API 密钥**或 **xAI API 密钥**。凭据获取方式请参阅上方对应的提供商指南。命令行工具可配置 API 密钥和 Codex 登录；Claude 和 xAI 设备登录，以及 DeepSeek/OpenRouter/xAI 密钥管理，也可以在正在运行的应用的**账户**页面中完成。
   </Step>
-  <Step title="Start or recreate the stack">
+  <Step title="启动或重建服务栈">
     ```bash
     ./kritt start
     ```
 
-    If open·kritt is already running, stop the attached stack with Ctrl+C first. Existing
-    containers do not receive a newly changed `.env` value until Compose recreates them.
+    如果 open·kritt 已在运行，请先按 Ctrl+C 停止前台服务栈。Compose 重建容器前，现有容器不会收到新修改的 `.env` 值。
   </Step>
-  <Step title="Verify the provider">
-    Run `./kritt setup` again and confirm the selected method is marked as present. The
-    workflow generator, post-script generator, and new-scan form enable providers
-    that open·kritt detects as configured; other visible providers link to Accounts.
+  <Step title="验证提供商配置">
+    再次运行 `./kritt setup`，确认所选方式显示为已配置。工作流生成器、后处理脚本生成器和新建扫描表单会启用 open·kritt 检测为已配置的提供商；其他可见提供商会链接到账户页面。
   </Step>
 </Steps>
 
-## Credential handling
+## 凭据处理
 
-API keys configured by the CLI are written to the repository's `.env` file. Codex logins
-are stored under `ENGINE_CODEX_ACCOUNTS_HOST`, which defaults to
-`./.data/codex-accounts`; a Claude login is stored under `ENGINE_CLAUDE_HOME`, which
-defaults to `./.data/claude`; a Grok/xAI login is stored under
-`ENGINE_GROK_HOME_HOST` / `ENGINE_GROK_ACCOUNTS_HOST`, which default to `./.data/grok`
-and `./.data/grok-accounts`. The Accounts page keeps Codex/Claude/xAI account paths and
-its DeepSeek, OpenRouter, and xAI keys synchronized with `.env`, and mirrors those keys
-under `.data/engine/credentials` so running services see changes immediately. `.env` and
-`.data/` are ignored by Git.
+通过命令行工具配置的 API 密钥会写入仓库的 `.env` 文件。Codex 登录信息保存在 `ENGINE_CODEX_ACCOUNTS_HOST` 指定的位置（默认为 `./.data/codex-accounts`）；Claude 登录信息保存在 `ENGINE_CLAUDE_HOME` 指定的位置（默认为 `./.data/claude`）；Grok/xAI 登录信息保存在 `ENGINE_GROK_HOME_HOST` / `ENGINE_GROK_ACCOUNTS_HOST` 指定的位置（默认为 `./.data/grok` 和 `./.data/grok-accounts`）。账户页面会将 Codex/Claude/xAI 账户路径及 DeepSeek、OpenRouter 和 xAI 密钥与 `.env` 保持同步，并将这些密钥镜像到 `.data/engine/credentials`，以便正在运行的服务立即读取更改。`.env` 和 `.data/` 均已加入 Git 忽略规则。
 
 <Warning>
-  Treat `.env`, `./.data/codex`, `./.data/codex-accounts`, `./.data/claude`,
-  `./.data/grok`, `./.data/grok-accounts`, and the engine credential store as secrets.
-  Never commit them, paste them into an issue, or share them with another user. Revoke
-  and replace a credential immediately if it is exposed.
+  请将 `.env`、`./.data/codex`、`./.data/codex-accounts`、`./.data/claude`、`./.data/grok`、`./.data/grok-accounts` 和引擎凭据目录视为机密信息。切勿将其提交到仓库、粘贴到议题中或分享给其他用户。凭据一旦泄露，请立即撤销并更换。
 </Warning>
 
-The backend has private write access to `.env` and the provider stores so Accounts can
-persist additions and removals, but secret values are never returned by the API. The
-engine receives the actual credential when it starts a model harness.
+后端可以私下写入 `.env` 和提供商存储，以便账户页面持久化添加和删除操作，但 API 不会返回机密值。引擎启动模型运行框架时会接收实际凭据。
 
 <Note>
-  `GITHUB_TOKEN` is not an AI provider credential. It is optional and is only needed to
-  clone private GitHub repositories or dependencies.
+  `GITHUB_TOKEN` 不是 AI 提供商凭据。它是可选项，仅在克隆私有 GitHub 代码库或依赖项时需要。
 </Note>
 
-Next: configure the recommended [Codex provider](/ai-provider-setup/codex),
-[Claude Code](/ai-provider-setup/claude-code), or
-[DeepSeek](/ai-provider-setup/deepseek), [OpenRouter](/ai-provider-setup/openrouter),
-or [xAI](/ai-provider-setup/xai).
+下一步：配置推荐的 [Codex 提供商](/ai-provider-setup/codex)、[Claude Code](/ai-provider-setup/claude-code)、[DeepSeek](/ai-provider-setup/deepseek)、[OpenRouter](/ai-provider-setup/openrouter) 或 [xAI](/ai-provider-setup/xai)。

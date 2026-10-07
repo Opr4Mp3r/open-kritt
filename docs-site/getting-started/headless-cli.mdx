@@ -1,11 +1,9 @@
 ---
-title: 'Headless CLI'
-description: 'Create and monitor scans on servers without a graphical interface.'
+title: '无界面命令行工具'
+description: '在没有图形界面的服务器上创建并监控扫描。'
 ---
 
-`./kritt-headless` operates open·kritt from a terminal-only host such as an Ubuntu EC2
-instance. It is a client of the running backend: configure and start the Docker stack
-first, then use the headless CLI from another shell.
+`./kritt-headless` 可在只有终端的主机（例如 Ubuntu EC2 实例）上操作 open·kritt。它是正在运行的后端客户端：先配置并启动 Docker 服务栈，再从另一个终端使用无界面命令行工具。
 
 ```bash
 # First shell, tmux window, or service manager
@@ -15,39 +13,29 @@ first, then use the headless CLI from another shell.
 ./kritt-headless
 ```
 
-The command requires Node.js 20 or newer, but does not require `npm install`.
+该命令需要 Node.js 20 或更高版本，但无需运行 `npm install`。
 
-The default interactive mode is a full-screen terminal interface. Use the Up and Down
-Arrow keys to move, Enter to choose, Esc to go back, and Space to toggle items in a
-multi-select list. Scan states are color coded, long lists keep the current selection in
-view, and scan details can be scrolled with the Arrow keys. `NO_COLOR=1` disables color.
-The individual commands below remain plain-text and script-friendly.
+默认交互模式为全屏终端界面。使用上下方向键移动，按 Enter 选择，按 Esc 返回，按空格切换多选列表中的项目。扫描状态会以颜色区分；长列表会保持当前选项可见；扫描详情可用方向键滚动。设置 `NO_COLOR=1` 可关闭颜色。下方各命令均使用纯文本输出，便于脚本调用。
 
 <Warning>
-  The bundled backend has no application authentication and binds to `127.0.0.1` by default. Keep it private. Run the
-  CLI on the same host, or use an authenticated private tunnel; do not expose the backend port directly to the internet.
+  内置后端默认未启用应用层身份验证，并绑定到 `127.0.0.1`。请保持其私有。请在同一主机上运行命令行工具，或使用经过身份验证的私有隧道；不要将后端端口直接暴露到互联网。
 </Warning>
 
-## What the headless CLI supports
+## 无界面命令行工具支持的功能
 
-- Import portable workflows, post-scripts, agent skills, and severity rankers.
-- Create scans, including remote/local targets, dependencies, configuration, required
-  `extra.*` values, model choices and per-depth overrides, skills, rankers, job limits,
-  and concurrent/queued launch policy.
-- List and inspect scans, including state, progress, active workflow depth and execution
-  phase, active model workers, retry counts, and failure reasons.
-- Pause, stop, and resume scans using the same lifecycle API as the web UI.
-- View and update every non-secret engine runtime setting exposed on **Settings**.
-- Export terminal scan findings to a ZIP file.
+- 导入可移植的工作流、后处理脚本、智能体技能和严重性排序规则。
+- 创建扫描，支持远程/本地目标、依赖项、配置、必需的
+  `extra.*` 值、模型选择和按深度覆盖配置、技能、排序规则、任务数上限以及并发/排队启动策略。
+- 列出并检查扫描，包括状态、进度、活动工作流深度和执行阶段、活动模型工作进程、重试次数和失败原因。
+- 使用与网页界面相同的生命周期 API 暂停、停止和恢复扫描。
+- 查看并更新**设置**页面公开的所有非机密引擎运行时配置。
+- 将扫描发现项导出为 ZIP 文件。
 
-Finding contents are intentionally not printed. Export a completed scan—or a stopped or
-failed scan that already has findings—and inspect the ZIP on a suitable workstation.
+发现项内容不会直接打印。请导出已完成的扫描，或已有发现项的已停止/失败扫描，然后在合适的工作站上检查 ZIP 文件。
 
-## Portable resource workflow
+## 可移植资源的使用流程
 
-The headless CLI does not contain editors for workflows, post-scripts, skills, or
-rankers. Create and review those resources in a graphical open·kritt installation, select
-**Export** on its card, and copy the JSON file to the remote host. Then import it:
+无界面命令行工具不提供工作流、后处理脚本、技能或排序规则编辑器。请在带图形界面的 open·kritt 安装中创建并审查这些资源，在资源卡片上选择**导出**，然后将 JSON 文件复制到远程主机并导入：
 
 ```bash
 ./kritt-headless import workflow ./audit.workflow.json
@@ -56,36 +44,27 @@ rankers. Create and review those resources in a graphical open·kritt installati
 ./kritt-headless import ranker ./impact.severity-ranker.json
 ```
 
-Omit the path in a terminal to be prompted for it. Files are capped at 2 MB and pass
-through the same server-side validators as resources created in the UI. Every import
-creates a new resource; it does not overwrite one with a matching name.
+在终端中省略路径时，系统会提示你输入路径。文件上限为 2 MB，并使用与界面中创建的资源相同的服务端校验器。每次导入都会创建新资源，不会覆盖同名资源。
 
 <Warning>
-  Review imported prompts and skill instructions before running them. They control what repository and scan context an
-  agent sends to the configured model provider.
+  运行之前请检查导入的提示词和技能指令。它们会影响智能体向已配置模型提供商发送哪些代码库和扫描上下文。
 </Warning>
 
-## Create a scan
+## 创建扫描
 
-Run the guided flow:
+运行引导流程：
 
 ```bash
 ./kritt-headless scan create
 ```
 
-The workflow and post-scripts are selected first because their prompts determine which
-`extra.*` values are mandatory. Prefix an extra value, configuration value, or custom
-ranker value with `@` to read it from a local file—for example,
-`@./scan-inputs/program.md`. The backend remains authoritative and rejects unavailable
-models, incompatible provider/harness combinations, missing resources, invalid targets,
-or missing prompt inputs.
+系统会先选择工作流和后处理脚本，因为它们的提示词决定哪些 `extra.*` 值为必填项。在附加变量、配置值或自定义排序规则值前加上 `@`，即可从本地文件读取内容，例如 `@./scan-inputs/program.md`。后端仍是最终校验方，会拒绝不可用的模型、不兼容的提供商/运行框架组合、缺失的资源、无效目标或缺少提示词输入的请求。
 
-If a scan is already active, choose whether to queue the new scan or start it in the
-concurrent pool. The command prints the new scan ID and initial state.
+如果已有扫描正在运行，可选择将新扫描加入队列，或放入并发池立即启动。命令会显示新扫描的 ID 和初始状态。
 
-## Monitor and manage scans
+## 监控和管理扫描
 
-Use the interactive menu, or use individual commands:
+使用交互菜单或单独执行以下命令：
 
 ```bash
 ./kritt-headless scan list
@@ -96,13 +75,11 @@ Use the interactive menu, or use individual commands:
 ./kritt-headless scan stop 42
 ```
 
-`scan show` reports current workflow/post-processing workers, their execution phase and
-workflow depth, progress, and recent normalized error messages. It never requests the
-vulnerability-list endpoint.
+`scan show` 会报告当前工作流/后处理工作进程、执行阶段和工作流深度、进度，以及最近的规范化错误消息。它不会请求漏洞列表接口。
 
-## Export results
+## 导出结果
 
-The default destination is the root of the open·kritt repository:
+默认目标位置是 open·kritt 仓库根目录：
 
 ```bash
 ./kritt-headless scan export 42
@@ -110,13 +87,11 @@ The default destination is the root of the open·kritt repository:
 ./kritt-headless scan export 42 /srv/exports/audit.zip
 ```
 
-Existing files are not overwritten. Add `--force` only when replacing the exact
-destination is intentional. The backend permits complete exports for completed scans and
-clearly marked partial exports for stopped or failed scans that have findings.
+不会覆盖现有文件。只有在确实要替换指定目标文件时，才添加 `--force`。后端允许完整导出已完成扫描；对于存在发现项的已停止或失败扫描，则允许生成明确标记的部分导出。
 
-## Runtime settings
+## 运行时设置
 
-Open the interactive settings editor, list settings, or change one explicitly:
+打开交互式设置编辑器、列出设置，或显式修改某项设置：
 
 ```bash
 ./kritt-headless settings show
@@ -124,19 +99,15 @@ Open the interactive settings editor, list settings, or change one explicitly:
 ./kritt-headless settings set ignoreLowStorage false
 ```
 
-Values use the current backend's advertised type and range. Settings marked as requiring
-engine recreation still need the recreation described in [Settings](/getting-started/settings).
-Provider credentials remain under `./kritt setup` and **Accounts**; the settings API and
-headless CLI never return their values.
+值必须符合当前后端公布的类型和范围。标记为需要重建引擎的设置，仍需按[设置](/getting-started/settings)中的说明重建。提供商凭据仍通过 `./kritt setup` 和**账户**页面管理；设置 API 和无界面命令行工具都不会返回凭据值。
 
-## API address
+## API 地址
 
-The client reads `BACKEND_PORT` from the repository `.env` and otherwise defaults to
-`http://127.0.0.1:3002/api`. Override it for a private tunnel or another local binding:
+客户端会从仓库 `.env` 读取 `BACKEND_PORT`；如果没有配置，则默认为 `http://127.0.0.1:3002/api`。通过私有隧道或其他本地绑定访问时，可覆盖该地址：
 
 ```bash
 OPEN_KRITT_API_URL=http://127.0.0.1:4300 ./kritt-headless health
 ./kritt-headless --api-url http://127.0.0.1:4300 scan list
 ```
 
-Run `./kritt-headless help` for the complete command summary.
+运行 `./kritt-headless help` 查看完整命令摘要。

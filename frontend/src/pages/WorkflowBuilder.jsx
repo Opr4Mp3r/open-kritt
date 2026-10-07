@@ -763,7 +763,7 @@ export default function WorkflowBuilder() {
           <input
             value={b.description}
             onChange={(e) => mut((n) => (n.description = e.target.value))}
-            placeholder="Describe what this workflow looks for…"
+            placeholder="描述此工作流要寻找的内容…"
             style={{
               border: 'none',
               outline: 'none',
@@ -968,7 +968,7 @@ export default function WorkflowBuilder() {
                               }}
                             >
                               <span style={{ fontSize: 11, lineHeight: 1 }}>⚠</span>
-                              <span>INVALID - template key reference</span>
+                              <span>无效的模板字段引用</span>
                             </div>
                           )}
                           <div style={{ padding: '12px 14px' }}>
@@ -1183,7 +1183,7 @@ export default function WorkflowBuilder() {
                   }
                 />
               )}
-              <Label>PROMPT CONTENT</Label>
+              <Label>提示词内容</Label>
               <PromptEditor
                 ref={editorRef}
                 value={sel.content}
@@ -1212,7 +1212,7 @@ export default function WorkflowBuilder() {
               <RefSummary content={sel.content} available={earlierKeys(selLevel.depth)} />
 
               <Label style={{ margin: '18px 0 8px' }}>
-                AVAILABLE KEYS <span style={{ textTransform: 'none', letterSpacing: 0 }}>· click to insert</span>
+                可用字段 <span style={{ textTransform: 'none', letterSpacing: 0 }}>· 点击插入</span>
               </Label>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                 {[...earlierKeys(selLevel.depth).entries()].map(([name, from]) => (
@@ -1248,7 +1248,7 @@ export default function WorkflowBuilder() {
                     cursor: 'pointer',
                   }}
                 >
-                  extra.&lt;key&gt;<span style={{ color: 'var(--text-3)' }}> · dynamic</span>
+                  extra.&lt;key&gt;<span style={{ color: 'var(--text-3)' }}> · 动态字段</span>
                 </span>
               </div>
 
@@ -1260,7 +1260,7 @@ export default function WorkflowBuilder() {
                   margin: '22px 0 10px',
                 }}
               >
-                <Label inline>OUTPUT FORMAT</Label>
+                <Label inline>输出格式</Label>
                 <Toggle on={selLevel.multiOutput} onClick={() => toggleMulti(selLevel.depth)} label="multi_output" />
               </div>
               {selLevel.steps.length > 1 && (
@@ -1691,7 +1691,7 @@ function RefSummary({ content, available }) {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '16px 0 8px' }}>
-        <Label inline>REFERENCED KEYS</Label>
+        <Label inline>引用字段</Label>
         <span
           className="mono"
           style={{ fontSize: 10.5, color: bad ? 'var(--fail)' : total ? 'var(--ok)' : 'var(--text-3)' }}
@@ -1761,7 +1761,7 @@ function LastStepBox({ missing, invalidTypes, onAddAll }) {
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, color: 'var(--fail)' }}>Terminal step has vulnerability output issues:</span>
+            <span style={{ fontSize: 12, color: 'var(--fail)' }}>末尾步骤的漏洞输出存在问题：</span>
             <span
               onClick={onAddAll}
               className="mono"

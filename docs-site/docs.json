@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "open·kritt",
-  "description": "Orchestrate AI agents to find real vulnerabilities in code.",
+  "description": "编排 AI 智能体，发现代码中的真实漏洞。",
   "colors": {
     "primary": "#ff5c3d",
     "light": "#ff8a72",
@@ -16,7 +16,7 @@
   "navigation": {
     "groups": [
       {
-        "group": "Getting started",
+        "group": "快速开始",
         "pages": [
           "getting-started/welcome",
           "getting-started/self-hosted-vs-managed",
@@ -26,7 +26,7 @@
         ]
       },
       {
-        "group": "AI provider setup",
+        "group": "AI 提供商配置",
         "pages": [
           "ai-provider-setup/overview",
           "ai-provider-setup/codex",
@@ -37,7 +37,7 @@
         ]
       },
       {
-        "group": "First scan",
+        "group": "首次扫描",
         "pages": [
           "first-scan/workflow",
           "first-scan/post-script",
@@ -46,7 +46,7 @@
         ]
       },
       {
-        "group": "Workflows",
+        "group": "工作流",
         "pages": [
           "workflows/built-in-workflows",
           "workflows/import-and-export",
@@ -60,7 +60,7 @@
         ]
       },
       {
-        "group": "Post-scripts",
+        "group": "后处理脚本",
         "pages": [
           "post-scripts/difference-from-workflow",
           "post-scripts/recommended-usage",
@@ -69,18 +69,18 @@
         ]
       },
       {
-        "group": "Severity ranker",
+        "group": "严重性排序规则",
         "pages": [
           "severity-ranker/why",
           "severity-ranker/how-to-create"
         ]
       },
       {
-        "group": "Skills",
+        "group": "技能",
         "pages": ["skills/add-and-use"]
       },
       {
-        "group": "Scans",
+        "group": "扫描",
         "pages": [
           "scans/create",
           "scans/local-vs-remote",
@@ -94,7 +94,7 @@
         ]
       },
       {
-        "group": "Scan results",
+        "group": "扫描结果",
         "pages": [
           "scan-results/how-to-view",
           "scan-results/vulnerability-view",

@@ -7,67 +7,51 @@
 
 # open·kritt
 
-**Orchestrate AI agents to find real vulnerabilities in code.**
+**编排 AI 智能体，发现代码中的真实漏洞。**
 
-An open-source, self-hosted security and vulnerability research platform that turns
-focused AI analysis into de-duplicated, ranked findings with configurable validation and
-enrichment.
+这是一个开源、自托管的安全与漏洞研究平台，可将有针对性的 AI 分析整理为去重、分级的发现结果，并支持按需验证和补充信息。
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Kritt-ai/open-kritt?sort=semver)](https://github.com/Kritt-ai/open-kritt/releases)
 
-[Website](https://kritt.ai) ·
-[Documentation](https://docs.kritt.ai) ·
-[Getting started](https://docs.kritt.ai/getting-started/installation-and-setup) ·
-[Contributing](CONTRIBUTING.md) ·
-[Owners](OWNERSHIP.md) ·
-[Research paper](https://kritt.ai/open-kritt-launch)
+[官方网站](https://kritt.ai) ·
+[文档](https://docs.kritt.ai) ·
+[快速开始](https://docs.kritt.ai/getting-started/installation-and-setup) ·
+[参与贡献](CONTRIBUTING.md) ·
+[项目所有者](OWNERSHIP.md) ·
+[研究论文](https://kritt.ai/open-kritt-launch)
 
-<a href="https://t.co/WzXMUKWxcR"><img alt="Join the open·kritt Discord community" src="https://img.shields.io/badge/Discord-5865F2?logo=discord&amp;logoColor=white" /></a>
-<a href="https://x.com/Kritt_AI"><img alt="Follow Kritt on X" src="https://img.shields.io/badge/X-000000?logo=x&amp;logoColor=white" /></a>
+<a href="https://t.co/WzXMUKWxcR"><img alt="加入 open·kritt Discord 社区" src="https://img.shields.io/badge/Discord-5865F2?logo=discord&amp;logoColor=white" /></a>
+<a href="https://x.com/Kritt_AI"><img alt="在 X 关注 Kritt" src="https://img.shields.io/badge/X-000000?logo=x&amp;logoColor=white" /></a>
 
 </div>
 
-![open·kritt workflow builder](assets/workflow_screen.png)
+![open·kritt 工作流构建器](assets/workflow_screen.png)
 
-## What is open·kritt?
+## open·kritt 是什么？
 
-Pointing a model at an entire repository and asking it to find vulnerabilities rarely
-works well. open·kritt takes a focused approach: break the research into small,
-well-defined tasks, run them across AI agents in parallel, and combine their output into
-findings you can validate and prioritize.
+让模型直接分析整个代码库并寻找漏洞，通常效果不佳。open·kritt 采用聚焦式方法：将研究拆分为边界清晰的小任务，由多个 AI 智能体并行执行，再汇总结果，供你验证和排序。
 
-It is built for security researchers and security-minded developers who want control
-over their prompts, workflows, model providers, and infrastructure.
+它面向希望掌控提示词、工作流、模型提供商和基础设施的安全研究人员与重视安全的开发者。
 
-### What it does
+### 功能
 
-- **Build workflows** — chain focused prompts into reusable security research playbooks.
-- **Run scans** — analyze remote or local repositories and their dependencies with Codex,
-  Claude Code, or Grok Build.
-- **Verify findings** — use post-scripts to validate issues, build proofs of concept, and
-  produce reports.
-- **Export scan results** — package canonical findings, structured data, post-processing
-  output, reports, and proofs of concept in one ZIP archive with a share-safe manifest;
-  completed scans produce complete exports, while stopped or failed scans with findings
-  produce clearly marked partial exports. Attacker-influenced report and PoC source is
-  kept as plain text.
-- **Prioritize results** — apply custom severity rankers, a consistent finding schema,
-  and automatic de-duplication.
-- **Bring your own model access** — use a Codex login or connect through OpenAI,
-  Anthropic, DeepSeek, OpenRouter, or xAI.
+- **构建工作流** — 将聚焦的提示词串联为可复用的安全研究流程。
+- **执行扫描** — 使用 Codex、Claude Code 或 Grok Build 分析远程或本地代码库及其依赖项。
+- **验证发现结果** — 使用后处理脚本验证问题、构建概念验证并生成报告。
+- **导出扫描结果** — 将标准发现结果、结构化数据、后处理输出、报告和概念验证打包到 ZIP 文件，并附带适合分享的清单。已完成的扫描会完整导出；已停止或失败但包含发现结果的扫描会生成明确标记的部分导出。受攻击者影响的报告和 PoC 源内容将以纯文本保存。
+- **确定结果优先级** — 使用自定义严重性排序规则、统一的发现结果结构和自动去重。
+- **自备模型访问方式** — 使用 Codex 登录，或连接 OpenAI、Anthropic、DeepSeek、OpenRouter 或 xAI。
 
-> **Built from real security research.** The Kritt team has earned over **$1,500,000 in
-> bug-bounty payouts** under the researcher name **Blockian**
+> **源自真实安全研究。** Kritt 团队以研究者 **Blockian** 的名义获得了超过 **1,500,000 美元的漏洞赏金**
 > ([Immunefi](https://immunefi.com/profile/Blockian/) ·
 > [HackenProof](https://hackenproof.com/hackers/Blockian) ·
 > [blockian.xyz](https://blockian.xyz) · [@Kritt_AI](https://x.com/Kritt_AI)).
-> open·kritt is the open-source distillation of the internal project behind that work.
+> open·kritt 是支撑这些工作的内部项目开源精简版。
 
-## Getting started
+## 快速开始
 
-You need Git, Docker with Docker Compose, and Node.js 20 or newer. The repository-local
-CLI has no install step.
+你需要安装 Git、带 Docker Compose 的 Docker，以及 Node.js 20 或更高版本。仓库自带的命令行工具无需单独安装。
 
 ```bash
 git clone https://github.com/Kritt-ai/open-kritt
@@ -76,40 +60,27 @@ cd open-kritt
 ./kritt start
 ```
 
-Open [http://localhost:5173](http://localhost:5173) once the stack is running. You only
-need one model-access option; `./kritt setup` guides you through the available logins and
-API keys. A `GITHUB_TOKEN` is optional and only needed for private GitHub repositories.
+服务启动后，打开 [http://localhost:5173](http://localhost:5173)。只需配置一种模型访问方式；`./kritt setup` 会引导你完成可用的登录或 API 密钥配置。`GITHUB_TOKEN` 为可选项，仅在访问私有 GitHub 仓库时需要。
 
-On a server without a browser or desktop, leave the stack running and open another shell:
+如果服务器没有浏览器或桌面环境，请保持服务运行，并另开一个终端执行：
 
 ```bash
 ./kritt-headless
 ```
 
-The headless CLI imports portable workflow, post-script, skill, and ranker JSON; creates
-scans with the same backend validation as the web form; displays scan status, stages, and
-failure reasons; edits non-secret runtime settings; and exports finding bundles. It does
-not display finding contents in the terminal. See the
-[headless CLI guide](docs-site/getting-started/headless-cli.mdx).
+无界面命令行工具支持导入可移植的工作流、后处理脚本、技能和排序规则 JSON；创建扫描时使用与网页表单相同的后端校验；显示扫描状态、阶段和失败原因；编辑非机密运行时设置；并导出发现结果包。它不会在终端显示发现内容。详见[无界面命令行指南](docs-site/getting-started/headless-cli.mdx)。
 
-The default ports bind to `127.0.0.1`, and the backend does not include application
-authentication. Keep the stack private.
+默认端口仅绑定到 `127.0.0.1`，后端不提供应用层身份验证。请勿将此服务公开到不可信网络。
 
-Tool-enabled agents run as root inside disposable job containers, with writable repository
-copies and direct internet access so they can install tools, compile targets, run tests,
-and build proofs of concept. Run open·kritt on a dedicated Docker host or VM; see the
-[threat model](docs/threat-model.md) before scanning untrusted code.
+可调用工具的智能体会以 root 身份在一次性任务容器中运行，并拥有可写的仓库副本和直接互联网访问权限，以便安装工具、编译目标、运行测试和构建概念验证。请在专用 Docker 主机或虚拟机上运行 open·kritt；扫描不可信代码前，请阅读[威胁模型](docs/threat-model.md)。
 
-For prerequisites, manual Docker setup, and provider-specific instructions, read the
-[installation guide](docs-site/getting-started/installation-and-setup.mdx) and
-[AI provider setup](docs-site/ai-provider-setup/overview.mdx).
+有关前置条件、手动 Docker 配置和各模型提供商的说明，请阅读[安装指南](docs-site/getting-started/installation-and-setup.mdx)和 [AI 提供商配置](docs-site/ai-provider-setup/overview.mdx)。
 
-In **Accounts**, use the persisted **Active** switch to choose which accounts may receive
-new assignments while keeping other credentials saved. See [active provider accounts](docs/account-activity.md).
+在**账户**页面中，使用会保存状态的**启用**开关，选择哪些账户可以接收新任务，同时保留其他已保存的凭据。详见[启用模型提供商账户](docs/account-activity.md)。
 
-## Documentation
+## 文档
 
-Preview the documentation locally with Mint:
+使用 Mint 在本地预览文档：
 
 ```bash
 npm install -g mint
@@ -117,30 +88,26 @@ cd docs-site
 npm run dev
 ```
 
-Open [http://localhost:3001](http://localhost:3001) to view the site.
+打开 [http://localhost:3001](http://localhost:3001) 查看文档站点。
 
-- [Product overview](docs-site/getting-started/welcome.mdx)
-- [Use open·kritt without a graphical interface](docs-site/getting-started/headless-cli.mdx)
-- [Run your first scan](docs-site/first-scan/workflow.mdx)
-- [Workflows and prompt steps](docs-site/workflows/steps.mdx)
-- [Security and threat model](docs/threat-model.md)
+- [产品概览](docs-site/getting-started/welcome.mdx)
+- [在无图形界面环境中使用 open·kritt](docs-site/getting-started/headless-cli.mdx)
+- [执行首次扫描](docs-site/first-scan/workflow.mdx)
+- [工作流与提示词步骤](docs-site/workflows/steps.mdx)
+- [安全与威胁模型](docs/threat-model.md)
 
-## Community and contributing
+## 社区与贡献
 
-open·kritt is jointly owned and maintained by
-[Harel Rom (`@harel-coffee`)](https://github.com/harel-coffee) and
-[Gabriel Balko (`@GabiCtrlZ`)](https://github.com/GabiCtrlZ). See
-[project ownership and copyright](OWNERSHIP.md) for details.
+open·kritt 由
+[Harel Rom (`@harel-coffee`)](https://github.com/harel-coffee) 和
+[Gabriel Balko (`@GabiCtrlZ`)](https://github.com/GabiCtrlZ) 共同拥有并维护。详情请参阅[项目所有权和版权](OWNERSHIP.md)。
 
-Questions and ideas belong in [GitHub Discussions](https://github.com/Kritt-ai/open-kritt/discussions).
-Use [GitHub Issues](https://github.com/Kritt-ai/open-kritt/issues) for bugs and feature
-requests.
+问题和想法请发布到 [GitHub Discussions](https://github.com/Kritt-ai/open-kritt/discussions)。缺陷和功能请求请提交到 [GitHub Issues](https://github.com/Kritt-ai/open-kritt/issues)。
 
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the development
-setup, test commands, and Conventional Commit requirements.
+欢迎参与贡献。开发环境、检查命令和 Conventional Commits 规范请参阅[贡献指南](CONTRIBUTING.md)。
 
-Please report security vulnerabilities privately by following [SECURITY.md](SECURITY.md), not through a public issue.
+请按照 [SECURITY.md](SECURITY.md) 的说明私下报告安全漏洞，不要通过公开 issue 披露。
 
-## License
+## 许可证
 
-open·kritt is licensed under the [GNU Affero General Public License v3.0](LICENSE).
+open·kritt 采用 [GNU Affero 通用公共许可证第 3 版](LICENSE)授权。

@@ -12,31 +12,31 @@ import {
 
 describe('rate-limited scans', () => {
   it('has explicit status presentation and a deterministic retry summary', () => {
-    expect(statusMeta('queued').label).toBe('Queued');
-    expect(statusMeta('rate_limited').label).toBe('Rate limited');
+    expect(statusMeta('queued').label).toBe('排队中');
+    expect(statusMeta('rate_limited').label).toBe('请求受限');
     expect(
       rateLimitRetryText({ retry_count: 2, retry_after: '2026-07-19T12:10:00Z' }, Date.parse('2026-07-19T12:00:00Z'))
-    ).toBe('Automatic retry #2 in 10m 00s.');
+    ).toBe('自动重试 #2：10m 00s 后。');
     expect(
       rateLimitRetryText({ retry_count: 2, retry_after: '2026-07-19T12:10:00Z' }, Date.parse('2026-07-19T12:09:42Z'))
-    ).toBe('Automatic retry #2 in 18s.');
+    ).toBe('自动重试 #2：18s 后。');
   });
 
   it('distinguishes provider capacity throttling from account quota exhaustion', () => {
-    expect(statusMeta('rate_limited', { limit_kind: 'provider_throttled' }).label).toBe('Provider busy');
+    expect(statusMeta('rate_limited', { limit_kind: 'provider_throttled' }).label).toBe('提供商繁忙');
     expect(rateLimitPresentation({ limit_kind: 'provider_throttled' })).toMatchObject({
       accountRelated: false,
-      label: 'Provider busy',
+      label: '提供商繁忙',
     });
-    expect(statusMeta('rate_limited', { limit_kind: 'account_quota_limited' }).label).toBe('Quota exhausted');
+    expect(statusMeta('rate_limited', { limit_kind: 'account_quota_limited' }).label).toBe('配额已耗尽');
     expect(rateLimitPresentation({ limit_kind: 'account_quota_limited' })).toMatchObject({
       accountRelated: true,
-      label: 'Quota exhausted',
+      label: '配额已耗尽',
     });
-    expect(statusMeta('rate_limited', { limit_kind: 'subagent_limited' }).label).toBe('Subagent limit');
+    expect(statusMeta('rate_limited', { limit_kind: 'subagent_limited' }).label).toBe('子智能体限制');
     expect(rateLimitPresentation({ limit_kind: 'subagent_limited' })).toMatchObject({
       accountRelated: false,
-      label: 'Subagent limit',
+      label: '子智能体限制',
     });
     expect(
       providerCapacityAutoscalePresentation({
@@ -46,7 +46,7 @@ describe('rate-limited scans', () => {
         provider_capacity_worker_cap: 3,
         provider_capacity_autoscale_events: 1,
       }).compact
-    ).toBe('Subagent-limit autoscale: 4 → 3 workers');
+    ).toBe('子智能体限制后自动缩容: 4 → 3 个工作进程');
   });
 
   it('summarizes a scan-specific provider capacity reduction', () => {
@@ -61,7 +61,7 @@ describe('rate-limited scans', () => {
       initialCap: 20,
       workerCap: 18,
       reductions: 2,
-      compact: 'Provider-capacity autoscale: 20 → 18 workers',
+      compact: '提供商容量不足时自动缩容：20 → 18 个工作进程',
     });
   });
 });

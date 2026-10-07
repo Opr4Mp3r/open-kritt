@@ -22,7 +22,7 @@ export default function Workflows() {
   useEffect(() => {
     setDialogOpen(newDialogParam === '1');
   }, [newDialogParam]);
-  usePageChrome([{ label: 'Workflows', active: true }], { label: '+ New workflow', to: '/workflows?new=1' }, []);
+  usePageChrome([{ label: '工作流', active: true }], { label: '+ 新建工作流', to: '/workflows?new=1' }, []);
   const { data, loading, error, reload, setData } = useFetch(() => api.workflows(), []);
   const workflows = useNewestFirst(data);
   const workflowPages = usePagination(workflows, { pageSize: 6 });
@@ -45,7 +45,7 @@ export default function Workflows() {
     setImportError('');
     try {
       if (file.size > WORKFLOW_IMPORT_MAX_BYTES) {
-        throw new Error('Workflow JSON files must be 2 MB or smaller.');
+        throw new Error('工作流 JSON 文件不能超过 2 MB。');
       }
       const payload = parseWorkflowImport(await file.text());
       const imported = await api.createWorkflow(payload);
@@ -54,7 +54,7 @@ export default function Workflows() {
       const messages =
         importFailure instanceof ApiError
           ? apiErrorMessages(importFailure)
-          : [importFailure?.message || 'The workflow could not be imported.'];
+          : [importFailure?.message || '无法导入工作流。'];
       setImportError(messages.join(' '));
     } finally {
       setImporting(false);
@@ -66,7 +66,7 @@ export default function Workflows() {
     if (!workflowDeleteState(workflow).canDelete || busyWorkflowId !== null) return;
 
     const confirmed = window.confirm(
-      `Permanently delete workflow "${workflow.name}" and its configured steps? This cannot be undone.`
+      `确定永久删除工作流“${workflow.name}”及其已配置的步骤吗？此操作无法撤销。`
     );
     if (!confirmed) return;
 
@@ -87,20 +87,20 @@ export default function Workflows() {
     <div style={{ padding: '30px 32px', maxWidth: 1180 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
         <div>
-          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>Workflows</div>
+          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>工作流</div>
           <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 3 }}>
-            Reusable scan blueprints — chains of AI analysis steps.
+            可复用的扫描方案，由多个 AI 分析步骤串联组成。
           </div>
         </div>
         <Button variant="ghost" disabled={importing} onClick={chooseWorkflowFile}>
-          {importing ? 'Importing…' : 'Import JSON'}
+          {importing ? '正在导入…' : '导入 JSON'}
         </Button>
       </div>
       <input
         ref={importInputRef}
         type="file"
         accept=".json,application/json"
-        aria-label="Import workflow JSON"
+        aria-label="导入工作流 JSON"
         onChange={importWorkflow}
         style={{ display: 'none' }}
       />
@@ -130,9 +130,9 @@ export default function Workflows() {
       )}
       {data && data.length === 0 && (
         <EmptyState
-          title="No workflows yet"
-          sub="Workflows are the blueprints the engine runs. Create your first one to start scanning."
-          action={<Button to="/workflows?new=1">+ New workflow</Button>}
+          title="还没有工作流"
+          sub="工作流是引擎执行的扫描方案。创建第一个工作流即可开始扫描。"
+          action={<Button to="/workflows?new=1">+ 新建工作流</Button>}
         />
       )}
       {data && data.length > 0 && (
@@ -148,7 +148,7 @@ export default function Workflows() {
               />
             ))}
           </div>
-          <Pagination {...workflowPages} itemLabel="workflows" />
+          <Pagination {...workflowPages} itemLabel="工作流" />
         </>
       )}
     </div>
@@ -170,7 +170,7 @@ export function WorkflowCard({ workflow: w, busy, deleting, onDelete }) {
         cursor: 'pointer',
       }}
     >
-      <CardLinkOverlay to={`/workflows/${w.id}`} label={`Open workflow ${w.name}`} />
+      <CardLinkOverlay to={`/workflows/${w.id}`} label={`打开工作流 ${w.name}`} />
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
           <div className="mono" style={{ fontWeight: 600, fontSize: 15.5 }}>
@@ -182,19 +182,19 @@ export function WorkflowCard({ workflow: w, busy, deleting, onDelete }) {
           {deleteState.canDelete && (
             <Button
               variant="danger"
-              aria-label={`Delete ${w.name}`}
-              title="Delete unused workflow"
+              aria-label={`删除 ${w.name}`}
+              title="删除未使用的工作流"
               disabled={busy}
               onClick={(event) => onDelete(event, w)}
               style={{ position: 'relative', zIndex: 2, height: 27, padding: '0 9px', fontSize: 11.5 }}
             >
-              {deleting ? 'Deleting…' : 'Delete'}
+              {deleting ? '正在删除…' : '删除'}
             </Button>
           )}
           <Button
             variant="ghost"
-            aria-label={`Export ${w.name}`}
-            title="Export workflow as JSON"
+            aria-label={`导出 ${w.name}`}
+            title="将工作流导出为 JSON"
             disabled={deleting}
             onClick={(event) => {
               event.stopPropagation();
@@ -202,7 +202,7 @@ export function WorkflowCard({ workflow: w, busy, deleting, onDelete }) {
             }}
             style={{ position: 'relative', zIndex: 2, height: 27, padding: '0 9px', fontSize: 11.5 }}
           >
-            Export
+            导出
           </Button>
           <span
             className="mono"
@@ -214,7 +214,7 @@ export function WorkflowCard({ workflow: w, busy, deleting, onDelete }) {
               borderRadius: 6,
             }}
           >
-            {w.stepCount} steps
+            {w.stepCount} 个步骤
           </span>
         </div>
       </div>
@@ -249,7 +249,7 @@ export function WorkflowCard({ workflow: w, busy, deleting, onDelete }) {
         <span>
           <span style={{ color: 'var(--text)', fontWeight: 600 }}>{w.scanCount}</span> scans
         </span>
-        <span>last used {w.lastUsed || '—'}</span>
+        <span>上次使用：{w.lastUsed || '—'}</span>
       </div>
     </div>
   );
@@ -307,7 +307,7 @@ function NewWorkflowDialog({ workflows, onClose, onImport, importing, importErro
           </div>
           <button
             type="button"
-            aria-label="Close"
+            aria-label="关闭"
             onClick={onClose}
             style={{
               border: 'none',
@@ -326,23 +326,23 @@ function NewWorkflowDialog({ workflows, onClose, onImport, importing, importErro
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <OptionCard
                 autoFocus
-                title="Generate with AI"
-                sub="Describe the research process you want, then review a detailed, valid workflow draft."
+                title="使用 AI 生成"
+                sub="描述你需要的研究流程，再检查生成的完整有效工作流草稿。"
                 to="/workflows/generate"
               />
               <OptionCard
-                title="Blank workflow"
-                sub="Start from an empty blueprint and build every step yourself."
+                title="空白工作流"
+                sub="从空白方案开始，手动构建每个步骤。"
                 to="/workflows/new"
               />
               <OptionCard
-                title={importing ? 'Importing workflow…' : 'Import JSON file'}
-                sub="Create a workflow from an open-kritt export or compatible workflow JSON."
+                title={importing ? '正在导入工作流…' : '导入 JSON 文件'}
+                sub="从 open-kritt 导出文件或兼容的工作流 JSON 创建工作流。"
                 disabled={importing}
                 onClick={onImport}
               />
               <OptionCard
-                title="Duplicate an existing workflow"
+                title="复制现有工作流"
                 sub={
                   hasWorkflows
                     ? 'Copy another workflow’s steps as a starting point, then tweak.'

@@ -69,8 +69,8 @@ export default function CreateScan() {
   const isDuplicating = Boolean(duplicateFromId);
   usePageChrome(
     [
-      { label: 'Scans', to: '/scans' },
-      { label: isDuplicating ? 'Duplicate configuration' : 'New scan', active: true },
+      { label: '扫描', to: '/scans' },
+      { label: isDuplicating ? '复制配置' : '新建扫描', active: true },
     ],
     null,
     []
@@ -625,25 +625,25 @@ export default function CreateScan() {
               <Link to={`/scans/${duplicateSource.id}`} style={{ color: 'var(--accent)', fontWeight: 600 }}>
                 {duplicateSource.repoDisplay || duplicateSource.repoFull || `scan ${duplicateSource.id}`}
               </Link>
-              . Results, logs, status, attempts, and timestamps are not copied.
+              。扫描结果、日志、状态、尝试记录和时间戳不会复制。
             </div>
           )}
 
-          <Label>1 · WORKFLOW</Label>
+          <Label>1 · 工作流</Label>
           <div style={{ marginBottom: 28 }}>
             <SearchSelect
               items={workflowOptions}
               value={form.workflowId}
               onChange={setWorkflow}
-              placeholder="Search workflows…"
+              placeholder="搜索工作流…"
               renderTrigger={(w) => (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                   <span className="mono" style={{ fontWeight: 600, fontSize: 14 }}>
-                    {w?.name || 'Select workflow'}
+                    {w?.name || '选择工作流'}
                   </span>
                   {w && (
                     <span className="mono" style={{ fontSize: 11, color: 'var(--text-3)' }}>
-                      {w.stepCount} steps
+                      {w.stepCount} 个步骤
                     </span>
                   )}
                 </span>
@@ -655,7 +655,7 @@ export default function CreateScan() {
                       {w.name}
                     </span>
                     <span className="mono" style={{ fontSize: 10.5, color: 'var(--text-3)' }}>
-                      {w.stepCount} steps
+                      {w.stepCount} 个步骤
                     </span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 3 }}>{w.description}</div>
@@ -666,13 +666,13 @@ export default function CreateScan() {
           </div>
 
           {/* ===================== TARGET ===================== */}
-          <Label>2 · TARGET</Label>
+          <Label>2 · 目标</Label>
           <Pills
             value={form.repoKind}
             onChange={(k) => set({ repoKind: k })}
             options={[
-              ['remote', 'Remote'],
-              ['local', 'Local'],
+              ['remote', '远程'],
+              ['local', '本地'],
             ]}
           />
 
@@ -681,7 +681,7 @@ export default function CreateScan() {
               className="create-scan-two-column"
               style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 12 }}
             >
-              <Field label="repository">
+              <Field label="代码库">
                 <Input
                   value={form.repoUrl}
                   onChange={(e) => set({ repoUrl: e.target.value })}
@@ -690,7 +690,7 @@ export default function CreateScan() {
                   mono
                   style={{ borderColor: form.repoUrl && !repoUrlValid ? 'var(--fail)' : 'var(--border)' }}
                 />
-                {form.repoUrl && !repoUrlValid && <FieldError>Use owner/repo or a GitHub URL.</FieldError>}
+                {form.repoUrl && !repoUrlValid && <FieldError>请使用 owner/repo 格式或 GitHub URL。</FieldError>}
               </Field>
               <Field label="commit_sha">
                 <Input
@@ -703,18 +703,18 @@ export default function CreateScan() {
             </div>
           ) : (
             <div style={{ marginBottom: 12 }}>
-              <Field label="local repository">
+              <Field label="本地代码库">
                 <SearchSelect
                   height={38}
                   items={localItems}
                   value={form.repoLocal}
                   onChange={(name) => set({ repoLocal: name })}
-                  placeholder="Search local repos…"
-                  emptyText="No local repos found under the configured root."
+                  placeholder="搜索本地代码库…"
+                  emptyText="配置的根目录下没有找到本地代码库。"
                   renderTrigger={(r) => (
                     <span style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
                       <span className="mono" style={{ fontSize: 13, color: r ? 'var(--text)' : 'var(--text-3)' }}>
-                        {r?.name || 'Select a local repository'}
+                        {r?.name || '选择本地代码库'}
                       </span>
                       {r && (
                         <span className="mono" style={{ fontSize: 11, color: 'var(--text-3)' }}>
@@ -729,7 +729,7 @@ export default function CreateScan() {
                         {r.name}
                       </div>
                       <div className="mono" style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 2 }}>
-                        {r.path} · {localMeta(r) || 'not a git repo'}
+                        {r.path} · {localMeta(r) || '非 Git 仓库'}
                       </div>
                     </div>
                   )}
@@ -754,9 +754,7 @@ export default function CreateScan() {
                 }}
               >
                 <span style={{ flex: 'none' }}>ⓘ</span>
-                At scan start, open·kritt takes one snapshot of this folder, including modified and untracked files but
-                excluding .git. Git is not required. The selected model provider receives the snapshot contents; create
-                a new scan to capture later changes.
+                扫描开始时，open·kritt 会对该文件夹创建一次快照，包含已修改和未跟踪文件，但不包括 .git。无需安装 Git。所选模型提供商会收到快照内容；如需纳入后续更改，请新建扫描。
               </div>
             </div>
           )}
@@ -769,9 +767,9 @@ export default function CreateScan() {
 
           {/* ===================== DEPENDENCIES ===================== */}
           <Label>
-            3 · DEPENDENCIES{' '}
+            3 · 依赖项{' '}
             <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--text-3)' }}>
-              · optional · scanned alongside the target
+              · 可选 · 与目标代码库一同扫描
             </span>
           </Label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
@@ -820,7 +818,7 @@ export default function CreateScan() {
                     className="create-scan-two-column"
                     style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10 }}
                   >
-                    <Field label="dependency repository" small>
+                    <Field label="依赖代码库" small>
                       <Input
                         value={dep.repo_full || ''}
                         onChange={(e) => updateDep(i, { repo_full: e.target.value })}
@@ -835,7 +833,7 @@ export default function CreateScan() {
                         }}
                       />
                       {dep.repo_full && !isValidRemoteRepo(dep.repo_full) && (
-                        <FieldError>Use owner/repo or a GitHub URL.</FieldError>
+                        <FieldError>请使用 owner/repo 格式或 GitHub URL。</FieldError>
                       )}
                     </Field>
                     <Field label="commit_sha" small>
@@ -851,14 +849,14 @@ export default function CreateScan() {
                   </div>
                 ) : (
                   <div>
-                    <Field label="local repository" small>
+                    <Field label="本地代码库" small>
                       <SearchSelect
                         height={36}
                         items={localItems}
                         value={dep.repo_full || ''}
                         onChange={(name) => updateDep(i, { repo_full: name, commit_sha: null })}
-                        placeholder="Search local repos…"
-                        emptyText="No local repos found."
+                        placeholder="搜索本地代码库…"
+                        emptyText="没有找到本地代码库。"
                         renderTrigger={(r) => (
                           <span style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
                             <span
@@ -920,11 +918,11 @@ export default function CreateScan() {
               font: 'inherit',
             }}
           >
-            + add dependency
+            + 添加依赖项
           </button>
 
           {/* ===================== CONFIGURATION ===================== */}
-          <Label>4 · CONFIGURATION</Label>
+          <Label>4 · 配置</Label>
           <div style={{ marginBottom: 28 }}>
             <textarea
               value={form.configuration}
@@ -946,7 +944,7 @@ export default function CreateScan() {
               }}
             />
             <div style={{ marginTop: 12, maxWidth: 280 }}>
-              <Field label="maximum model jobs · optional">
+              <Field label="模型任务数上限 · 可选">
                 <Input
                   value={form.jobLimit}
                   onChange={(e) => set({ jobLimit: e.target.value })}
@@ -954,29 +952,29 @@ export default function CreateScan() {
                   min="1"
                   max="1000000"
                   step="1"
-                  placeholder="unlimited"
+                  placeholder="不限制"
                   mono
                   style={{ borderColor: jobLimitValid ? 'var(--border)' : 'var(--fail)' }}
                 />
                 <div style={{ fontSize: 11, lineHeight: 1.45, color: 'var(--text-3)', marginTop: 6 }}>
-                  Exact cap across workflow and post-processing jobs. Internal retries do not consume extra jobs.
+                  工作流和后处理任务的总数上限。内部重试不会额外消耗任务数。
                 </div>
-                {!jobLimitValid && <FieldError>Enter a whole number from 1 to 1,000,000.</FieldError>}
+                {!jobLimitValid && <FieldError>请输入 1 到 1,000,000 之间的整数。</FieldError>}
               </Field>
             </div>
           </div>
 
           {/* ===================== EXTRA ===================== */}
-          <Label>5 · EXTRA</Label>
+          <Label>5 · 附加变量</Label>
           <div style={{ marginBottom: 28 }}>
             {expectedExtra.length > 0 ? (
               <>
                 <div style={{ fontSize: 12.5, color: 'var(--text-2)', margin: '-4px 0 12px' }}>
-                  The selected workflow and post-scripts reference{' '}
+                  所选工作流和后处理脚本引用了{' '}
                   <span className="mono" style={{ color: 'var(--accent)' }}>
                     {'{{extra.…}}'}
                   </span>{' '}
-                  keys. Provide a value for each.
+                  字段。请为每个字段提供一个值。
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
                   {expectedExtra.map((k) => (
@@ -984,7 +982,7 @@ export default function CreateScan() {
                       <textarea
                         value={extraInputText(form.extra[k])}
                         onChange={(e) => setExtra(k, e.target.value)}
-                        placeholder="required"
+                        placeholder="必填"
                         spellCheck={false}
                         className="mono"
                         style={{
@@ -1018,18 +1016,18 @@ export default function CreateScan() {
               >
                 {selectedWorkflow ? (
                   <>
-                    The selected workflow and post-scripts don’t reference any{' '}
-                    <span className="mono">{'{{extra.…}}'}</span> keys — nothing to fill in here.
+                    所选工作流和后处理脚本没有引用任何{' '}
+                    <span className="mono">{'{{extra.…}}'}</span> 字段 — 此处无需填写。
                   </>
                 ) : (
-                  'Select a workflow to see its extra keys.'
+                  '选择工作流以查看其附加字段。'
                 )}
               </div>
             )}
           </div>
 
           {/* ===================== MODEL & HARNESS ===================== */}
-          <Label>6 · MODEL &amp; HARNESS</Label>
+          <Label>6 · 模型与运行框架</Label>
           <div style={{ marginBottom: 28 }}>
             <WorkflowModelConfiguration
               value={form}
@@ -1047,8 +1045,8 @@ export default function CreateScan() {
 
           {/* ===================== AGENT SKILLS ===================== */}
           <Label>
-            7 · AGENT SKILLS{' '}
-            <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--text-3)' }}>· optional</span>
+            7 · 智能体技能{' '}
+            <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--text-3)' }}>· 可选</span>
           </Label>
           {agentSkills.length > 0 && (
             <AgentSkillSearchInput
@@ -1060,7 +1058,7 @@ export default function CreateScan() {
           <div
             id="create-scan-agent-skills"
             role="group"
-            aria-label="Agent skills"
+            aria-label="智能体技能"
             style={{
               border: '1px solid var(--border)',
               borderRadius: 10,
@@ -1169,7 +1167,7 @@ export default function CreateScan() {
               );
             })}
             {agentSkills.length === 0 && (
-              <div style={{ fontSize: 12.5, color: 'var(--text-3)', padding: 13 }}>No agent skills defined.</div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-3)', padding: 13 }}>尚未定义智能体技能。</div>
             )}
             {agentSkills.length > 0 && filteredAgentSkills.length === 0 && (
               <div role="status" aria-live="polite" style={{ fontSize: 12.5, color: 'var(--text-3)', padding: 13 }}>
@@ -1179,13 +1177,13 @@ export default function CreateScan() {
           </div>
           <Pagination {...agentSkillPages} itemLabel="skills" compact />
           <div className="mono" style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 28 }}>
-            {form.agentSkillIds.length} selected.
-            {agentSkillQuery.trim() ? ` ${filteredAgentSkills.length} of ${agentSkills.length} skills match. ` : ' '}
-            Selected skills are installed into each executor agent for this scan.
+            已选择 {form.agentSkillIds.length} 项。
+            {agentSkillQuery.trim() ? ` ${agentSkills.length} 项技能中有 ${filteredAgentSkills.length} 项匹配。` : ' '}
+            所选技能会安装到本次扫描使用的各执行智能体中。
           </div>
 
           {/* ===================== POST-SCRIPT ===================== */}
-          <Label>8 · POST-SCRIPTS</Label>
+          <Label>8 · 后处理脚本</Label>
           <div
             style={{
               border: '1px solid var(--border)',
@@ -1264,16 +1262,15 @@ export default function CreateScan() {
               );
             })}
           </div>
-          <Pagination {...postScriptPages} itemLabel="post-scripts" compact />
+          <Pagination {...postScriptPages} itemLabel="个后处理脚本" compact />
           <div className="mono" style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 7 }}>
-            {selectedPostScriptIds.length} selected. The first selected script is stored as the scan primary; all
-            selected scripts run after ranking.
+            已选择 {selectedPostScriptIds.length} 项。第一个脚本将设为扫描主脚本；所有已选脚本会在排序后运行。
           </div>
 
           {/* ===================== SEVERITY RANKER ===================== */}
-          <Label style={{ marginTop: 28 }}>9 · SEVERITY RANKER</Label>
+          <Label style={{ marginTop: 28 }}>9 · 严重性排序规则</Label>
           <div style={{ fontSize: 12.5, color: 'var(--text-2)', marginBottom: 12 }}>
-            Pick any number of rankers — their rules are concatenated, then your scan-specific rules are appended.
+            可选择任意数量的规则集 — 规则会串联在一起，之后追加本次扫描专属规则。
           </div>
           <div
             className="create-scan-ranker-grid"
@@ -1327,7 +1324,7 @@ export default function CreateScan() {
                     <div className="mono" style={{ fontWeight: 600, fontSize: 13 }}>
                       {r.name}
                       {r.isDefault ? (
-                        <span style={{ color: 'var(--accent)', fontSize: 10.5, marginLeft: 7 }}>default</span>
+                        <span style={{ color: 'var(--accent)', fontSize: 10.5, marginLeft: 7 }}>默认</span>
                       ) : null}
                     </div>
                     <div style={{ fontSize: 11.5, color: 'var(--text-2)', marginTop: 3, lineHeight: 1.45 }}>
@@ -1339,20 +1336,20 @@ export default function CreateScan() {
             })}
             {refData.severityRankers.length === 0 && (
               <div style={{ fontSize: 12.5, color: 'var(--text-3)', padding: '2px 0' }}>
-                No saved rankers — add scan-specific rules below, or create one under Severity rankers.
+                尚无已保存的规则集 — 可在下方添加扫描专属规则，或前往严重性排序规则页面创建。
               </div>
             )}
           </div>
-          <Pagination {...rankerPages} itemLabel="rankers" compact style={{ marginBottom: 16 }} />
+          <Pagination {...rankerPages} itemLabel="个规则集" compact style={{ marginBottom: 16 }} />
 
           <div className="mono" style={{ fontSize: 11.5, color: 'var(--text-2)', marginBottom: 5 }}>
-            scan-specific rules <span style={{ color: 'var(--text-3)' }}>· optional · markdown</span>
+            本次扫描专属规则 <span style={{ color: 'var(--text-3)' }}>· 可选 · Markdown</span>
           </div>
           <textarea
             value={form.rankerExtra}
             onChange={(e) => set({ rankerExtra: e.target.value })}
             spellCheck={false}
-            placeholder="e.g. Treat anything reachable from the public checkout flow as at least High."
+            placeholder="例如：可从公开结账流程访问到的漏洞，严重性至少应为高。"
             className="mono"
             style={{
               width: '100%',
@@ -1492,11 +1489,11 @@ export function AgentSkillSearchInput({ value, onChange, listId }) {
           event.preventDefault();
           onChange('');
         }}
-        aria-label="Search agent skills"
+        aria-label="搜索智能体技能"
         aria-controls={listId}
         autoComplete="off"
         maxLength={200}
-        placeholder="Search by name, slug, description, or license…"
+        placeholder="按名称、slug、说明或许可证搜索…"
         mono
         style={{ height: 36, paddingRight: value ? 34 : 12 }}
       />
@@ -1504,8 +1501,8 @@ export function AgentSkillSearchInput({ value, onChange, listId }) {
         <button
           type="button"
           onClick={() => onChange('')}
-          aria-label="Clear agent skill search"
-          title="Clear search"
+          aria-label="清除智能体技能搜索"
+          title="清除搜索"
           style={{
             position: 'absolute',
             top: '50%',
@@ -1674,17 +1671,17 @@ export function ScanLaunchDialog({ saving = false, onClose, onChoose }) {
         }}
       >
         <div id="scan-launch-title" style={{ fontSize: 17, fontWeight: 600 }}>
-          A scan is already running
+          已有扫描正在运行
         </div>
         <div style={{ marginTop: 8, color: 'var(--text-2)', fontSize: 13.5, lineHeight: 1.55 }}>
-          Start this scan in the concurrent pool, or place it behind immediate scans until capacity is available.
+          可将此扫描加入并发池，也可将其排在立即启动的扫描之后，等待容量空闲。
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 9, marginTop: 22 }}>
           <Button variant="ghost" disabled={saving} onClick={() => onChoose('queue')}>
-            Queue
+            加入队列
           </Button>
           <Button data-autofocus disabled={saving} onClick={() => onChoose('immediate')}>
-            {saving ? 'Creating…' : 'Start immediately'}
+            {saving ? '正在创建…' : '立即启动'}
           </Button>
         </div>
       </div>

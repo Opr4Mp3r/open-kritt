@@ -23,14 +23,14 @@ export default function ResourceNotice({ notice }) {
       </div>
       {(notice.detail || notice.remedy) && (
         <details style={{ marginTop: 6 }}>
-          <summary style={{ cursor: 'pointer', color: 'var(--text)' }}>Details and remedies</summary>
+          <summary style={{ cursor: 'pointer', color: 'var(--text)' }}>详情和处理建议</summary>
           {notice.detail && <p>{notice.detail}</p>}
           {notice.remedy && <p>{notice.remedy}</p>}
         </details>
       )}
       {notice.observedAt && (
         <div aria-live="off" style={{ fontSize: 11, marginTop: 6 }}>
-          Measured <time dateTime={notice.observedAt}>{new Date(notice.observedAt).toLocaleString()}</time>
+          测量时间：<time dateTime={notice.observedAt}>{new Date(notice.observedAt).toLocaleString('zh-CN')}</time>
         </div>
       )}
       {notice.fixLinks?.length > 0 && (

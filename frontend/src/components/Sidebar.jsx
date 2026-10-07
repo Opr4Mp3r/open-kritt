@@ -46,12 +46,12 @@ export const COMMUNITY_LINKS = [
   { label: 'X / Twitter', href: 'https://x.com/Kritt_AI' },
   { label: 'Website', href: 'https://kritt.ai/' },
   { label: 'Discord', href: 'https://discord.gg/JJr2CbBjc' },
-  { label: 'Contact us', href: 'mailto:info@kritt.ai', external: false },
+  { label: '联系我们', href: 'mailto:info@kritt.ai', external: false },
 ];
 
 export function CommunityLinks() {
   return (
-    <nav className="sidebar-community-links" aria-label="Project and community links">
+    <nav className="sidebar-community-links" aria-label="项目与社区链接">
       {COMMUNITY_LINKS.map(({ label, href, external = true }) => (
         <a
           className="sidebar-community-link"
@@ -69,7 +69,7 @@ export function CommunityLinks() {
 export function CommunityShareButton({ onClick }) {
   return (
     <button type="button" className="sidebar-community-share" onClick={onClick}>
-      Support open·kritt
+      支持 open·kritt
     </button>
   );
 }
@@ -131,34 +131,34 @@ export default function Sidebar({ onShareCommunity }) {
       </Link>
 
       <div className="mono sidebar-group-label" style={{ ...GROUP_LABEL, padding: '10px 8px 6px' }}>
-        OPERATE
+        工作区
       </div>
       <div className="sidebar-nav-group" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <NavItem label="Overview" to="/" active={isActive('/', true)} />
-        <NavItem label="Workflows" to="/workflows" active={isActive('/workflows')} />
-        <NavItem label="Scans" to="/scans" active={isActive('/scans')} />
+        <NavItem label="概览" to="/" active={isActive('/', true)} />
+        <NavItem label="工作流" to="/workflows" active={isActive('/workflows')} />
+        <NavItem label="扫描" to="/scans" active={isActive('/scans')} />
       </div>
 
       <div className="mono sidebar-group-label" style={{ ...GROUP_LABEL, padding: '16px 8px 6px' }}>
-        CONFIGURE
+        配置
       </div>
       <div className="sidebar-nav-group" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <NavItem label="Agent skills" to="/agent-skills" active={isActive('/agent-skills')} />
-        <NavItem label="Severity rankers" to="/severity-rankers" active={isActive('/severity-rankers')} />
-        <NavItem label="Post-scripts" to="/post-scripts" active={isActive('/post-scripts')} />
+        <NavItem label="智能体技能" to="/agent-skills" active={isActive('/agent-skills')} />
+        <NavItem label="严重性排序规则" to="/severity-rankers" active={isActive('/severity-rankers')} />
+        <NavItem label="后处理脚本" to="/post-scripts" active={isActive('/post-scripts')} />
       </div>
 
       <div className="mono sidebar-group-label" style={{ ...GROUP_LABEL, padding: '16px 8px 6px' }}>
-        SETTINGS
+        设置
       </div>
       <div className="sidebar-nav-group" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <NavItem label="Accounts" to="/accounts" active={isActive('/accounts')} />
-        <NavItem label="Settings" to="/settings" active={isActive('/settings')} />
+        <NavItem label="账户" to="/accounts" active={isActive('/accounts')} />
+        <NavItem label="系统设置" to="/settings" active={isActive('/settings')} />
       </div>
 
       <div className="sidebar-community">
         <div className="mono sidebar-community-label" style={GROUP_LABEL}>
-          COMMUNITY
+          社区
         </div>
         <div className="sidebar-community-actions">
           <CommunityLinks />
@@ -184,13 +184,13 @@ export default function Sidebar({ onShareCommunity }) {
             fontFamily: 'inherit',
           }}
         >
-          <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>Theme</span>
+          <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>主题</span>
           <div
             className="mono"
             style={{ display: 'flex', background: 'var(--surface-2)', borderRadius: 20, padding: 2 }}
           >
-            <span style={pill(lt)}>LGT</span>
-            <span style={pill(!lt)}>DRK</span>
+            <span style={pill(lt)}>浅色</span>
+            <span style={pill(!lt)}>深色</span>
           </div>
         </button>
         <div
@@ -204,7 +204,7 @@ export default function Sidebar({ onShareCommunity }) {
             color: 'var(--text-3)',
           }}
         >
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ok)' }} /> engine online · v
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ok)' }} /> 引擎已连接 · v
           {__APP_VERSION__}
         </div>
       </div>

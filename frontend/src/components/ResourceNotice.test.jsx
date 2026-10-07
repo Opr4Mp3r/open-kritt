@@ -42,12 +42,12 @@ describe('resource notices', () => {
     const storage = storageWarningPresentation({
       storage_warning: { code: 'low_storage', free_bytes: 1.25 * 1024 ** 3, required_bytes: 1.75 * 1024 ** 3 },
     });
-    expect(storage.message).toContain('At the last reported check, 1.25 GiB was free');
-    expect(storage.message).toContain('Minimum free storage was 1.75 GiB');
-    expect(storage.detail).toContain('may differ from Docker image storage');
-    expect(storage.remedy).toContain('does not free space');
+    expect(storage.message).toContain('最近一次检查结果：引擎数据所在文件系统可用空间为 1.25 GiB');
+    expect(storage.message).toContain('最低可用空间为 1.75 GiB');
+    expect(storage.detail).toContain('可能不同于 Docker 镜像存储');
+    expect(storage.remedy).toContain('此操作不会释放空间');
     expect(storageWarningPresentation({ storage_warning: { code: 'storage_check_unavailable' } }).message).toContain(
-      'a disk shortage has not been established'
+      '目前尚不能确认磁盘空间不足'
     );
     expect(storageWarningPresentation({ storage_warning: { code: 'low_storage' } }).message).not.toContain('0 GiB');
     expect(storageWarningPresentation({ storage_warning: { code: 'unrecognized' } })).toBeNull();
@@ -57,15 +57,15 @@ describe('resource notices', () => {
   it('does not present a runner kill as a provider quota or a confirmed memory shortage', () => {
     const retry = rateLimitPresentation({ limit_kind: 'runner_resource_limited' });
     expect(retry.accountRelated).toBe(false);
-    expect(retry.label).toBe('Runner retry pending');
-    expect(retry.message).toContain('cause is unknown');
+    expect(retry.label).toBe('运行器等待重试');
+    expect(retry.message).toContain('原因未知');
     const html = render(
       <ScanCard
         scan={{ id: '7', status: 'rate_limited', reasoning: { limit_kind: 'runner_resource_limited' } }}
         to="/scans/7"
       />
     );
-    expect(html).toContain('Runner retry pending');
+    expect(html).toContain('运行器等待重试');
     expect(html).not.toContain('View usage and provider limits');
   });
 });

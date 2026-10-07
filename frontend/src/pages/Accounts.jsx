@@ -103,8 +103,8 @@ export default function Accounts() {
   }, [load]);
 
   usePageChrome(
-    [{ label: 'Accounts', active: true }],
-    { label: refreshing ? 'Refreshing…' : 'Refresh accounts', onClick: () => load(true) },
+    [{ label: '账户', active: true }],
+    { label: refreshing ? '正在刷新…' : '刷新账户', onClick: () => load(true) },
     [refreshing, load]
   );
 
@@ -197,7 +197,7 @@ export default function Accounts() {
     <div className="accounts-page" style={{ padding: '30px 32px 56px', maxWidth: 1240 }}>
       <div className="accounts-heading">
         <div>
-          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>Accounts</div>
+          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>账户</div>
           <div style={{ color: 'var(--text-2)', marginTop: 7, maxWidth: 680, lineHeight: 1.5 }}>
             Manage provider logins and API keys. Show additional providers below to configure them. Secret values are
             never returned by the API.
@@ -210,15 +210,15 @@ export default function Accounts() {
         )}
       </div>
 
-      {loading && !data && <Spinner label="Loading provider accounts…" />}
+      {loading && !data && <Spinner label="正在加载提供商账户…" />}
       {error && <ErrorState error={error} onRetry={() => load()} />}
 
       {data && (
         <>
           <div className="account-summary-grid">
-            <Summary label="Configured providers" value={`${data.configuredProviders}/${data.providerCount}`} />
-            <Summary label="Active accounts" value={data.active} color="var(--ok)" />
-            <Summary label="Accounts observed" value={data.total} />
+            <Summary label="已配置的提供商" value={`${data.configuredProviders}/${data.providerCount}`} />
+            <Summary label="启用的账户" value={data.active} color="var(--ok)" />
+            <Summary label="账户总数" value={data.total} />
           </div>
 
           <ProviderVisibility
@@ -362,7 +362,7 @@ export function ProviderCard({
           </div>
         ) : loadError ? (
           <div className="account-empty">
-            <div style={{ fontWeight: 500 }}>Could not load {provider.label} accounts</div>
+            <div style={{ fontWeight: 500 }}>无法加载 {provider.label} 账户</div>
             <div style={{ color: 'var(--text-2)', fontSize: 12, marginTop: 4 }}>{loadError}</div>
           </div>
         ) : (provider.configured || signInRequired) && provider.accounts.length ? (
@@ -636,7 +636,7 @@ export function ProviderSignInRequired({ providerId, message }) {
         !
       </span>
       <div>
-        <strong>Sign in to {provider} again</strong>
+        <strong>请重新登录 {provider}</strong>
         <div>
           {message || `The saved token was rejected. Quota usage is hidden until this account is authenticated again.`}
         </div>
@@ -661,18 +661,18 @@ export function CodexWeeklyUsage({ usage, onStart, onReset, starting, resetting 
             !
           </span>
           <span>
-            <strong>Weekly usage hasn’t started.</strong> Use this account now so its allowance doesn’t go unused.
+            <strong>本周尚未开始使用。</strong> 请现在使用此账户，避免浪费用量额度。
           </span>
         </div>
       )}
       <div className="account-weekly-meta">
         <div className="account-weekly-stat">
-          <span className="mono account-kicker">Weekly reset</span>
+          <span className="mono account-kicker">每周重置</span>
           <span>{usage.resetRemaining || 'Time unavailable'}</span>
         </div>
         {usage.manualResetsAvailable !== null && (
           <div className="account-weekly-stat account-manual-reset-stat">
-            <span className="mono account-kicker">Manual resets</span>
+          <span className="mono account-kicker">手动重置</span>
             <span className="account-manual-reset-details">
               <span>{usage.manualResetsAvailable} available</span>
               {manualResetCredits.map((credit, index) => (
@@ -805,7 +805,7 @@ function CreditUsage({ credit }) {
     <div className="account-credit-summary">
       <div className="account-credit-heading">
         <div>
-          <div className="mono account-kicker">Credit usage</div>
+          <div className="mono account-kicker">额度用量</div>
           <div className="account-credit-value">{usage === null ? '—' : `${formatUsd(usage)} used`}</div>
         </div>
         <div className="account-credit-percent">
@@ -998,7 +998,7 @@ function LoginDialog({ provider, onClose, onComplete }) {
                     : 'Add Claude account'}
             </div>
           </div>
-          <button className="account-dialog-close" type="button" aria-label="Close" onClick={cancel}>
+          <button className="account-dialog-close" type="button" aria-label="关闭" onClick={cancel}>
             ×
           </button>
         </div>
@@ -1039,7 +1039,7 @@ function LoginDialog({ provider, onClose, onComplete }) {
 
         {session?.deviceCode && session.status !== 'completed' && (
           <div className="account-device-code-wrap">
-            <div className="mono account-kicker">One-time device code</div>
+            <div className="mono account-kicker">一次性设备代码</div>
             <div className="mono account-device-code">{session.deviceCode}</div>
             <Button variant="ghost" onClick={() => navigator.clipboard?.writeText(session.deviceCode)}>
               Copy code
@@ -1059,7 +1059,7 @@ function LoginDialog({ provider, onClose, onComplete }) {
               spellCheck="false"
               value={callbackCode}
               onChange={(event) => setCallbackCode(event.target.value)}
-              placeholder="Paste code"
+              placeholder="粘贴代码"
               className="account-credential-input mono"
             />
             <Button type="submit" disabled={submitting} style={{ marginTop: 12 }}>
@@ -1072,7 +1072,7 @@ function LoginDialog({ provider, onClose, onComplete }) {
 
         <div className="account-dialog-actions">
           {session?.status === 'completed' ? (
-            <Button onClick={onClose}>Done</Button>
+            <Button onClick={onClose}>完成</Button>
           ) : (
             <>
               <Button variant="ghost" onClick={cancel}>
@@ -1083,7 +1083,7 @@ function LoginDialog({ provider, onClose, onComplete }) {
                   {starting ? 'Starting…' : 'Start login'}
                 </Button>
               )}
-              {session?.status === 'failed' && <Button onClick={start}>Try again</Button>}
+              {session?.status === 'failed' && <Button onClick={start}>重试</Button>}
             </>
           )}
         </div>
@@ -1147,7 +1147,7 @@ function CredentialDialog({ provider, onClose, onSave }) {
               {provider.configured ? 'Add or replace API key' : 'Add account'}
             </div>
           </div>
-          <button className="account-dialog-close" type="button" aria-label="Close" onClick={onClose}>
+          <button className="account-dialog-close" type="button" aria-label="关闭" onClick={onClose}>
             ×
           </button>
         </div>
@@ -1163,7 +1163,7 @@ function CredentialDialog({ provider, onClose, onSave }) {
           spellCheck="false"
           value={credential}
           onChange={(event) => setCredential(event.target.value)}
-          placeholder="Paste key"
+          placeholder="粘贴密钥"
           className="account-credential-input mono"
         />
         <div style={{ color: 'var(--text-2)', fontSize: 11.5, lineHeight: 1.5, marginTop: 8 }}>

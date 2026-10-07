@@ -1,85 +1,62 @@
-# Security Policy
+# 安全策略
 
-open·kritt is a security tool: it runs AI agents over (potentially untrusted) source
-code and handles model API keys and repository credentials. We take the security of
-the project — and of the people who run it — seriously.
+open·kritt 是一款安全工具：它会让 AI 智能体分析（可能不可信的）源代码，并处理模型 API 密钥和代码库凭据。我们认真对待项目以及使用者的安全。
 
-## Reporting a vulnerability
+## 报告漏洞
 
-**Please do not open a public issue for security problems.**
+**请勿为安全问题创建公开议题。**
 
-Report privately through GitHub's built-in **private vulnerability reporting**:
+请通过 GitHub 内置的**私密漏洞报告**渠道进行报告：
 
-**→ [Report a vulnerability](https://github.com/Kritt-ai/open-kritt/security/advisories/new)**
+**→ [报告漏洞](https://github.com/Kritt-ai/open-kritt/security/advisories/new)**
 
-Or navigate there manually:
+也可以手动进入该页面：
 
-1. Go to the repository's **Security** tab.
-2. Click **Report a vulnerability** (under "Advisories").
-3. Fill in the details and submit.
+1. 打开代码库的 **Security** 标签页。
+2. 点击 **Report a vulnerability**（位于 “Advisories” 下）。
+3. 填写详情并提交。
 
-This opens a private advisory visible only to you and the maintainers. If you can't
-use that flow, open a regular issue that says only *"I'd like to report a security
-issue privately, please enable a private channel"* — with **no details** — and a
-maintainer will follow up.
+这会创建一个仅你和维护者可见的私密安全公告。如果无法使用此流程，请创建普通议题，但只写 *“我想私下报告安全问题，请启用私密渠道”*，**不要包含任何细节**。维护者会跟进。
 
-### What to include
+### 请提供以下信息
 
-- A description of the issue and its impact.
-- Steps to reproduce (proof-of-concept, affected component: `frontend` / `backend` /
-  `engine` / `database`).
-- Affected version (see the root `VERSION` file) and configuration.
-- Any suggested remediation.
+- 问题描述及其影响。
+- 复现步骤（概念验证、受影响组件：`frontend` / `backend` / `engine` / `database`）。
+- 受影响版本（见仓库根目录的 `VERSION` 文件）及配置。
+- 建议的修复方式（如有）。
 
-### What to expect
+### 后续处理
 
-- **Acknowledgement:** within 3 business days.
-- **Assessment & triage:** we'll confirm the issue and share a rough timeline.
-- **Fix & disclosure:** we aim to release a fix and a coordinated advisory as soon as
-  practical. We're happy to credit you in the advisory unless you prefer to remain
-  anonymous.
+- **确认收到：**3 个工作日内。
+- **评估和分诊：**我们会确认问题并提供大致处理时间。
+- **修复和披露：**我们会尽可能及时发布修复和协调披露的安全公告。除非你希望匿名，否则我们乐于在公告中致谢。
 
-Please give us reasonable time to remediate before any public disclosure.
+请给予我们合理的修复时间，再进行公开披露。
 
-## Supported versions
+## 支持的版本
 
-Security fixes land on the **latest** release and `main`; we do not backport to older
-minor release lines. Please reproduce on the latest version before reporting.
+安全修复会应用于**最新版本**和 `main`；我们不会向较旧的小版本系列回移修复。报告前请先在最新版本中复现问题。
 
-| Version | Supported |
+| 版本 | 是否支持 |
 | ------- | --------- |
-| latest `1.x` / `main` | ✅ |
-| older release lines | ❌ |
+| 最新 `1.x` / `main` | ✅ |
+| 更旧的版本系列 | ❌ |
 
-## Scope & threat model (for operators)
+## 范围与威胁模型（供操作者参考）
 
-Because open·kritt executes AI agents against arbitrary repositories, keep these in
-mind when self-hosting:
+由于 open·kritt 会让 AI 智能体执行针对任意代码库的任务，自托管时请注意：
 
-- **Untrusted code is analyzed, not trusted.** Run the engine/executor in an isolated
-  environment. Scan agents run as root in disposable containers with writable workspaces
-  and direct internet access. Use a dedicated VM or Docker host and treat scanned
-  repositories and model output as untrusted input.
-- **Secrets.** Model/provider API keys and `GITHUB_TOKEN` live in your gitignored `.env`;
-  provider logins live under `.data/`. Accounts gives the backend write access to those
-  stores so changes persist. Scope tokens minimally and rotate them. Never commit
-  secrets; the repo ships a `gitleaks` pre-commit hook to help.
-- **Data egress.** Scans send repository content to whichever model/provider endpoint
-  you configure (Codex/OpenAI, Anthropic, OpenRouter, or xAI). Understand where that data
-  goes before scanning sensitive code.
-- **Network.** The backend API is unauthenticated by default; do not
-  expose it to untrusted networks without putting your own auth/proxy in front.
+- **分析不可信代码，不要信任它。**请在隔离环境中运行引擎/执行器。扫描智能体以 root 身份在一次性容器中运行，并拥有可写工作区和直接互联网访问权限。请使用专用虚拟机或 Docker 主机，并将扫描的代码库和模型输出视为不可信输入。
+- **机密信息。**模型/提供商 API 密钥和 `GITHUB_TOKEN` 保存在加入 Git 忽略规则的 `.env` 文件中；提供商登录信息保存在 `.data/` 中。账户服务需要对这些存储具有写入权限，以便持久化更改。请尽量缩小令牌权限范围并定期轮换。切勿提交机密信息；仓库附带 `gitleaks` pre-commit 钩子以提供帮助。
+- **数据外发。**扫描会将代码库内容发送到你配置的模型/提供商接口（Codex/OpenAI、Anthropic、OpenRouter 或 xAI）。扫描敏感代码前，请先确认数据会发送到哪里。
+- **网络。**后端 API 默认未启用身份验证；若要将其暴露给不可信网络，请先部署自己的身份验证/代理。
 
-Reports about the security *of the open·kritt codebase itself* are always in scope.
-Findings that require an already-compromised host, or that are inherent to a
-misconfiguration explicitly warned about above, may be considered out of scope — but
-when in doubt, report it.
+有关 **open·kritt 代码库自身安全性**的报告始终属于处理范围。需要主机已遭入侵的漏洞，或由上文明确警告过的错误配置导致的问题，可能不在范围内；如有疑问，请提交报告。
 
-## For maintainers: enabling private reporting
+## 维护者：启用私密报告功能
 
-Private vulnerability reporting must be turned on for the repo (one-time):
+必须为仓库启用私密漏洞报告功能（仅需设置一次）：
 
 > **Settings → Code security and analysis → Private vulnerability reporting → Enable**
 
-(Org owners can enable it org-wide under the organization's Code security settings.)
-Once enabled, the **Security → Report a vulnerability** button appears for reporters.
+（组织所有者可以在组织的 Code security 设置中统一启用。）启用后，报告者会看到 **Security → Report a vulnerability** 按钮。

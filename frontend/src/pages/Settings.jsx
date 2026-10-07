@@ -10,132 +10,128 @@ import { useUnsavedChangesPrompt } from '../lib/useUnsavedChangesPrompt.js';
 
 const PRESENTATION = {
   workerCount: {
-    label: 'Engine worker slots',
-    unit: 'workers',
+    label: '引擎工作进程数',
+    unit: '个工作进程',
     description:
-      'Shared capacity for scan workflow and post-processing jobs. Set 0 to pause pickup of new work without stopping jobs already running.',
+      '扫描工作流和后处理任务共用的容量。设为 0 时会暂停接收新任务，但已在运行的任务会继续执行。',
   },
   maxConcurrentScans: {
-    label: 'Concurrent scan pool',
-    unit: 'scans',
-    description: 'Maximum immediate scans admitted at once. Queued scans wait until the active pool is empty.',
+    label: '并发扫描池',
+    unit: '项扫描',
+    description: '可同时立即运行的扫描数量上限。排队中的扫描会等待当前扫描池清空。',
   },
   maxWorkersPerScan: {
-    label: 'Workers per scan',
-    unit: 'workers',
-    description: 'Hard cap for one scan. Set 0 to divide worker slots automatically and fairly across active scans.',
+    label: '每项扫描的工作进程数',
+    unit: '个工作进程',
+    description: '单项扫描的工作进程数上限。设为 0 时，会在活动扫描之间自动、均衡地分配工作进程。',
   },
   workersPerAccount: {
-    label: 'Workers per account',
-    unit: 'workers',
+    label: '每个账户的工作进程数',
+    unit: '个工作进程',
     description:
-      'Maximum concurrent root model calls assigned to the same provider account across scans. Codex subagents inside each session use their separate cap.',
+      '所有扫描中分配给同一提供商账户的根模型调用并发上限。每个会话内的 Codex 子智能体使用单独的上限。',
   },
   autoscaleScanWorkersOnProviderCapacity: {
-    label: 'Autoscale scan workers on capacity errors',
+    label: '容量错误时自动调整扫描工作进程',
     description:
-      'When a provider reports temporary server-capacity throttling or Codex reaches its separate subagent limit, lower only that scan’s future worker cap by one and retry. Account quota errors are not autoscaled.',
-    enabledDescription: 'Capacity throttles reduce the affected scan by one worker.',
-    disabledDescription: 'Worker caps remain fixed.',
+      '当提供商报告暂时的服务器容量限制，或 Codex 达到单独的子智能体限制时，仅将受影响扫描后续的工作进程上限减少一个并重试。账户配额错误不会触发自动调整。',
+    enabledDescription: '遇到容量限制时，将受影响扫描的工作进程数减少一个。',
+    disabledDescription: '工作进程数上限保持不变。',
   },
   codexMaxSubagentsPerSession: {
-    label: 'Codex subagents per session',
-    unit: 'subagents',
-    description: 'Hard cap for concurrently running child agents inside each Codex scan session.',
+    label: '每个 Codex 会话的子智能体数',
+    unit: '个子智能体',
+    description: '每个 Codex 扫描会话中可同时运行的子智能体数量上限。',
   },
   codexFastMode: {
-    label: 'Codex Fast mode',
+    label: 'Codex 快速模式',
     description:
-      'Request faster responses for supported native Codex models, with higher usage costs. Models without advertised Fast support keep their normal tier. Availability and cost depend on the model and account.',
-    enabledDescription: 'Applies to new calls using supported native Codex models; running calls are unchanged.',
-    disabledDescription: 'New calls keep their normal service tier.',
+      '为支持的原生 Codex 模型请求更快的响应，但用量成本可能更高。未声明支持快速模式的模型仍使用常规服务等级。可用性和费用取决于模型与账户。',
+    enabledDescription: '适用于使用受支持的原生 Codex 模型发起的新调用；不会影响正在运行的调用。',
+    disabledDescription: '新调用继续使用常规服务等级。',
   },
   minFreeStorageGb: {
-    label: 'Minimum free storage',
+    label: '最低可用存储空间',
     unit: 'GiB',
     description:
-      'Pause new scan containers when free disk space falls below this level. Lowering it can keep scans moving, but increases the risk of filling the disk completely.',
+      '可用磁盘空间低于此值时，暂停启动新的扫描容器。降低此值可以让扫描继续进行，但会增加磁盘完全写满的风险。',
   },
   ignoreLowStorage: {
-    label: 'Ignore low-storage safeguard',
+    label: '忽略低存储空间保护',
     description:
-      'Allow new scan containers to start regardless of available disk space. Use only when you accept the risk of exhausting the host disk.',
-    enabledDescription: 'The minimum free-storage threshold is not enforced.',
-    disabledDescription: 'New containers pause below the configured threshold.',
+      '无论可用磁盘空间多少，都允许启动新的扫描容器。只有在接受主机磁盘耗尽的风险时才使用。',
+    enabledDescription: '不强制执行最低可用存储空间阈值。',
+    disabledDescription: '可用空间低于配置阈值时，暂停启动新容器。',
   },
   memoryReserveGb: {
-    label: 'Docker memory reserve',
+    label: 'Docker 内存预留',
     unit: 'GiB',
     description:
-      'Memory withheld from scan runners for the engine, database, API, and operating overhead. The worker ceiling is reduced automatically when the remaining budget cannot fit every runner.',
+      '为引擎、数据库、API 和系统开销预留的内存，不分配给扫描运行器。如果剩余内存无法容纳所有运行器，系统会自动降低工作进程上限。',
   },
   scanRunnerMemoryMb: {
-    label: 'Runner hard memory limit',
+    label: '运行器内存硬限制',
     unit: 'MiB',
     description:
-      'Docker hard limit for each tool-enabled model session. A runner that exceeds this limit is terminated; set 0 only to disable the hard cap.',
+      '每个启用工具的模型会话的 Docker 内存硬限制。超出限制的运行器会被终止；仅在需要禁用硬限制时设为 0。',
   },
   scanRunnerMemoryReservationMb: {
-    label: 'Runner memory reservation',
+    label: '运行器内存预留',
     unit: 'MiB',
     description:
-      'Soft memory reservation used for worker-capacity planning and live admission. It may be lower than the hard limit so idle runners share unused Docker memory.',
+      '用于工作进程容量规划和实时准入的软内存预留值。此值可低于硬限制，让空闲运行器共享未使用的 Docker 内存。',
   },
   scanRunnerCpus: {
-    label: 'Runner CPU limit',
-    unit: 'CPUs',
-    description:
-      'Maximum CPU capacity for each future scan runner. Fractional values let runners share CPU capacity; set 0 to leave CPU unlimited.',
+    label: '运行器 CPU 限制',
+    unit: '个 CPU',
+    description: '每个后续扫描运行器可使用的 CPU 上限。小数值允许多个运行器共享 CPU；设为 0 表示不限制 CPU。',
   },
   scanRunnerOomScoreAdj: {
-    label: 'Runner OOM priority',
+    label: '运行器 OOM 优先级',
     description:
-      'Linux out-of-memory priority for future runners. Positive values make a runner more likely to be terminated before the engine coordinator.',
+      '后续运行器的 Linux 内存不足优先级。正值会提高运行器在引擎协调进程之前被终止的可能性。',
   },
   memoryPressureEvictionEnabled: {
-    label: 'Evict one runner under memory pressure',
+    label: '内存压力过高时回收一个运行器',
     description:
-      'Disabled by default. When enabled, terminate the newest runner and retry it at reduced concurrency if free Docker memory falls below the engine reserve plus one runner reservation.',
-    enabledDescription: 'One newest runner is recycled before aggregate pressure can restart the engine.',
-    disabledDescription: 'Only admission control and Docker OOM handling protect the engine.',
+      '默认停用。启用后，如果 Docker 可用内存低于引擎预留值与单个运行器预留值之和，会终止最新的运行器，并以较低并发重试。',
+    enabledDescription: '在整体内存压力导致引擎重启之前，先回收最新启动的一个运行器。',
+    disabledDescription: '仅通过准入控制和 Docker OOM 处理来保护引擎。',
   },
   workspaceSetupConcurrency: {
-    label: 'Workspace setup concurrency',
-    unit: 'setups',
-    description:
-      'Limits simultaneous repository checkout and isolated workspace preparation. Lower values reduce Docker, disk, and network bursts.',
+    label: '工作区初始化并发数',
+    unit: '项初始化',
+    description: '限制同时检出代码库和准备隔离工作区的任务数量。降低此值可减少 Docker、磁盘和网络突发负载。',
   },
   retryCount: {
-    label: 'Model-call retries',
-    unit: 'retries',
-    description:
-      'Additional attempts for retryable workflow-step and post-script failures. This does not automatically resume a failed whole scan.',
+    label: '模型调用重试次数',
+    unit: '次重试',
+    description: '工作流步骤和后处理脚本失败后可额外尝试的次数。此设置不会自动恢复整项失败的扫描。',
   },
   cyberSafetyRetryCount: {
-    label: 'Cyber-block retries',
-    unit: 'retries',
-    description:
-      'Additional attempts made only when a provider blocks a request under its cybersecurity safety policy. Set 0 to fail after the first blocked attempt.',
+    label: '安全策略拦截重试次数',
+    unit: '次重试',
+    description: '仅当提供商依据网络安全政策拦截请求时额外尝试的次数。设为 0 表示首次被拦截后即判定失败。',
   },
   harnessTimeoutSeconds: {
-    label: 'Model-call timeout',
-    unit: 'seconds',
-    description: 'Maximum duration of each future scan harness invocation before it is terminated as timed out.',
+    label: '模型调用超时',
+    unit: '秒',
+    description: '每次扫描运行框架调用的最长时长。超过该时长后会终止调用并标记为超时。',
   },
 };
 
 const SOURCE_LABELS = {
-  runtime_config: 'Runtime config',
-  process_environment: 'Process environment',
-  project_environment: 'Project .env',
-  default: 'Built-in default',
+  runtime_config: '运行时配置',
+  process_environment: '进程环境变量',
+  project_environment: '项目 .env 文件',
+  default: '内置默认值',
 };
 
 const CAPABILITIES = [
   {
     key: 'automaticScanResume',
-    label: 'Whole-scan auto-resume',
-    description: 'Automatically resume failed scans with durable progress and backoff.',
+    label: '自动恢复整项扫描',
+    description: '自动恢复失败的扫描，并保留持久化进度及退避重试机制。',
   },
 ];
 
@@ -165,7 +161,7 @@ export default function Settings() {
   const changeCount = Object.keys(patch).length;
   const dirty = issueCount > 0 || changeCount > 0;
   useUnsavedChangesPrompt(dirty || saving);
-  usePageChrome([{ label: 'Settings', active: true }], null, []);
+  usePageChrome([{ label: '系统设置', active: true }], null, []);
 
   const set = (key, value) => {
     setNotice('');
@@ -232,16 +228,16 @@ export default function Settings() {
     <div className="settings-page">
       <div className="settings-heading">
         <div>
-          <h1>Settings</h1>
+          <h1>系统设置</h1>
           <p>
-            Tune non-secret engine runtime behavior. Provider credentials remain isolated under{' '}
-            <Link to="/accounts">Accounts</Link> and are never returned here.
+            调整非机密的引擎运行时行为。提供商凭据单独保存在
+            <Link to="/accounts">账户</Link>页面，不会在此处返回。
           </p>
         </div>
-        {data && <div className="mono settings-updated-at">Loaded {new Date(data.generatedAt).toLocaleString()}</div>}
+        {data && <div className="mono settings-updated-at">加载时间：{new Date(data.generatedAt).toLocaleString('zh-CN')}</div>}
       </div>
 
-      {loading && !data && <Spinner label="Loading settings…" />}
+      {loading && !data && <Spinner label="正在加载设置…" />}
       {error && <ErrorState error={error} onRetry={reload} />}
       {saveError && <SettingsError error={saveError} />}
       {notice && <div className="settings-notice">{notice}</div>}
@@ -250,29 +246,28 @@ export default function Settings() {
         <>
           {!data.persistence.projectEnvironment && (
             <div className="settings-warning">
-              The project environment file is unavailable. Live values can be updated, but an engine recreation may
-              restore deployment-provided values.
+              项目环境文件不可用。实时值可以更新，但重建引擎时可能会恢复部署时提供的值。
             </div>
           )}
 
           <section className="settings-section">
             <div className="settings-section-heading">
               <div>
-                <h2>Engine runtime</h2>
-                <p>Only whitelisted, non-secret settings are exposed by the API.</p>
+                <h2>引擎运行时</h2>
+                <p>API 仅公开列入白名单的非机密设置。</p>
               </div>
               <div className="settings-actions">
                 <Button variant="ghost" onClick={reset} disabled={!dirty || saving}>
-                  Reset
+                  重置
                 </Button>
                 <Button onClick={save} disabled={!changeCount || issueCount > 0 || saving}>
                   {saving
-                    ? 'Saving…'
+                    ? '正在保存…'
                     : issueCount
-                      ? 'Fix validation errors'
+                      ? '请修正校验错误'
                       : changeCount
-                        ? `Save ${changeCount} change${changeCount === 1 ? '' : 's'}`
-                        : 'Saved'}
+                        ? `保存 ${changeCount} 项更改`
+                        : '已保存'}
                 </Button>
               </div>
             </div>
@@ -283,8 +278,8 @@ export default function Settings() {
           <section className="settings-section">
             <div className="settings-section-heading">
               <div>
-                <h2>Scheduling roadmap</h2>
-                <p>Additional lifecycle behavior that remains intentionally manual.</p>
+                <h2>调度规划</h2>
+                <p>其他生命周期行为目前仍需手动操作。</p>
               </div>
             </div>
             <div className="settings-capability-grid">
@@ -294,10 +289,10 @@ export default function Settings() {
                   <div className="settings-capability" key={capability.key}>
                     <div className="settings-card-topline">
                       <h3>{capability.label}</h3>
-                      <span className="settings-badge settings-badge-muted">Not available</span>
+                      <span className="settings-badge settings-badge-muted">不可用</span>
                     </div>
                     <p>{capability.description}</p>
-                    <div className="mono settings-env-key">Tracked by {state.trackedBy}</div>
+                    <div className="mono settings-env-key">来源：{state.trackedBy}</div>
                   </div>
                 );
               })}
@@ -318,8 +313,7 @@ export function RuntimeSettingsFields({ data, draft, issues, saving, onChange })
     <>
       {missingLabels.length > 0 && (
         <div className="settings-warning">
-          Some settings are unavailable from the running backend and have been hidden: {missingLabels.join(', ')}.
-          Restart the backend to load the current settings schema.
+          正在运行的后端无法提供部分设置，已将其隐藏：{missingLabels.join('、')}。重启后端以加载当前设置结构。
         </div>
       )}
       <div className="settings-grid">
@@ -359,7 +353,7 @@ function BooleanRuntimeSetting({ name, presentation, setting, value, issue, disa
     <article className="settings-card">
       <div className="settings-card-topline">
         <h3>{presentation.label}</h3>
-        <span className="settings-badge settings-badge-live">Live</span>
+        <span className="settings-badge settings-badge-live">实时生效</span>
       </div>
       <p>{presentation.description}</p>
       <label className="settings-toggle-row" htmlFor={`setting-${name}`}>
@@ -378,12 +372,12 @@ function BooleanRuntimeSetting({ name, presentation, setting, value, issue, disa
       </label>
       {issue && <div className="settings-field-error">{issue}</div>}
       {!setting.valid && !issue && (
-        <div className="settings-field-error">The stored value was invalid; the safe default is shown.</div>
+        <div className="settings-field-error">存储的值无效，当前显示安全的默认值。</div>
       )}
       <div className="settings-card-meta">
         <span className="mono settings-env-key">{setting.envKey}</span>
         <span>{SOURCE_LABELS[setting.source] || setting.source}</span>
-        <span>Default {setting.defaultValue ? 'enabled' : 'disabled'}</span>
+        <span>默认{setting.defaultValue ? '启用' : '停用'}</span>
       </div>
     </article>
   );
@@ -400,12 +394,12 @@ function RuntimeSetting({ name, presentation, setting, value, issue, disabled, i
       <div className="settings-card-topline">
         <h3>{presentation.label}</h3>
         <span className={`settings-badge ${setting.apply === 'live' ? 'settings-badge-live' : ''}`}>
-          {setting.apply === 'live' ? 'Live' : 'Engine recreation'}
+          {setting.apply === 'live' ? '实时生效' : '需重建引擎'}
         </span>
       </div>
       <p>{presentation.description}</p>
       <label className="settings-input-label" htmlFor={`setting-${name}`}>
-        <span>Value</span>
+        <span>数值</span>
         <span className="mono">{presentation.unit}</span>
       </label>
       <input
@@ -424,7 +418,7 @@ function RuntimeSetting({ name, presentation, setting, value, issue, disabled, i
       />
       {issue && <div className="settings-field-error">{issue}</div>}
       {!setting.valid && !issue && (
-        <div className="settings-field-error">The stored value was invalid; the safe default is shown.</div>
+        <div className="settings-field-error">存储的值无效，当前显示安全的默认值。</div>
       )}
       {(aboveRecommendation || paused || ignored || cyberRetryEnabled) && !issue && (
         <div className="settings-field-warning">
