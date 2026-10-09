@@ -99,6 +99,12 @@ export const GENERATION_STATUSES = ['pending', 'running', 'completed', 'failed']
 export const GENERATION_REQUEST_MAX_LENGTH = 20_000;
 export const MODEL_ID_MAX_LENGTH = 200;
 
+export const CUSTOM_MODEL_PROVIDER_RE = /^custom:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export function isCustomModelProvider(modelProvider) {
+  return CUSTOM_MODEL_PROVIDER_RE.test(`${modelProvider || ''}`.trim().toLowerCase());
+}
+
 export function isModelProviderHarnessCompatible(modelProvider, harness) {
   return MODEL_PROVIDER_HARNESSES[modelProvider]?.includes(harness) || false;
 }

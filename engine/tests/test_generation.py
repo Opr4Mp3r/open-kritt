@@ -1361,6 +1361,8 @@ def test_run_forever_starts_a_dedicated_generation_worker(monkeypatch, tmp_path)
         def is_alive(self):
             return self.started
 
+    # No older catalog or credential file: startup must enter the claim loop.
+    monkeypatch.setenv("OPEN_KRITT_PROVIDER_CREDENTIALS_PATH", str(tmp_path / "providers.json"))
     worker = Worker(worker_config(tmp_path), db=SimpleNamespace())
     worker.runtime_worker_count = lambda: 1
     worker._schedule_codex_update = lambda: None
@@ -1376,6 +1378,77 @@ def test_run_forever_starts_a_dedicated_generation_worker(monkeypatch, tmp_path)
     assert [thread.name for thread in started_threads] == ["executor-worker-1", "generation-worker"]
     assert started_threads[0].target == worker._run_loop
     assert started_threads[1].target == worker._generation_loop
+
+
+def test_run_forever_does_not_claim_jobs_when_the_runtime_snapshot_never_arrives(monkeypatch, tmp_path):
+    events = []
+    (tmp_path / "custom-llm-providers.json").write_text('{"version":1,"providers":[]}\n', encoding="utf-8")
+    (tmp_path / "custom-llm-secrets.json").write_text('{"version":1,"secrets":{}}\n', encoding="utf-8")
+    monkeypatch.setenv("OPEN_KRITT_PROVIDER_CREDENTIALS_PATH", str(tmp_path / "providers.json"))
+    monkeypatch.setenv("OPEN_KRITT_CUSTOM_LLM_RUNTIME_WAIT_SECONDS", "0")
+
+    class FakeDb:
+        @contextmanager
+        def connect(self):
+            yield self
+
+        def commit(self):
+            return None
+
+        def mark_orphaned_running_metadata_interrupted(self, _conn, engine_started_at, error):
+            assert engine_started_at
+            assert error
+            return {}
+
+        def claim_scans(self, _conn, max_concurrent_scans):
+            assert max_concurrent_scans >= 1
+            events.append("claim_scans")
+            return []
+
+        def claim_generation(self, _conn):
+            events.append("claim_generation")
+            return None
+
+    class FakeThread:
+        def __init__(self, *, target, args=(), name, daemon):
+            self.target = target
+            self.args = args
+            self.name = name
+            self.daemon = daemon
+
+        def start(self):
+            events.append(f"start {self.name}")
+            stop_event = self.args[-1]
+
+            def wait_and_stop(_timeout=None):
+                stop_event.set()
+                return True
+
+            stop_event.wait = wait_and_stop
+            self.target(*self.args)
+
+        def is_alive(self):
+            return False
+
+    worker = Worker(worker_config(tmp_path), db=FakeDb())
+    worker.runtime_worker_count = lambda: 1
+    worker.runtime_memory_capacity = lambda: SimpleNamespace(
+        effective_workers=1, total_bytes=None, configured_workers=1
+    )
+    worker._memory_allows_new_runner = lambda: True
+    worker._schedule_docker_storage_cleanup = lambda: None
+    worker._update_codex_at_startup = lambda: None
+    monkeypatch.setattr(worker_module, "cleanup_stale_scan_sandboxes", lambda: None)
+    monkeypatch.setattr(worker_module, "cleanup_stale_workspace_snapshot_builders", lambda: None)
+    monkeypatch.setattr(worker_module.threading, "Thread", FakeThread)
+    monkeypatch.setattr(worker_module.time, "sleep", lambda _seconds: (_ for _ in ()).throw(AssertionError("claimed")))
+
+    with pytest.raises(SystemExit) as raised:
+        worker.run_forever()
+
+    assert raised.value.code == 1
+    assert events == []
+    assert not (tmp_path / "custom-llm-runtime.json").is_file()
 
 
 def test_scan_worker_loop_never_claims_generation_jobs(tmp_path):

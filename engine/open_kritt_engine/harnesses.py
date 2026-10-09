@@ -16,6 +16,15 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from .claude_auth import CLAUDE_OAUTH_EXPIRY_ENV, claude_oauth_timeout_seconds
+from .custom_llm import (
+    CUSTOM_LLM_ENV_KEY,
+    CustomLlm,
+    CustomLlmError,
+    codex_custom_config_args,
+    codex_provider_id,
+    is_custom_model_provider,
+    require_custom_llm,
+)
 from .provider_credentials import provider_environment
 from .resource_diagnostics import local_resource_failure_message
 from .runtime_config import runtime_float, runtime_int
@@ -992,6 +1001,7 @@ def _scan_docker_command(
         "CURSOR_AUTH_TOKEN",
         "CURSOR_AGENT_BIN",
         "GROK_BIN",
+        CUSTOM_LLM_ENV_KEY,
         "SSL_CERT_FILE",
         "SSL_CERT_DIR",
         "NODE_EXTRA_CA_CERTS",
@@ -1092,6 +1102,8 @@ def codex_cli_model_provider(
     configured = normalize_model_provider(codex_model_provider)
     if selected == "codex":
         return None
+    if is_custom_model_provider(selected):
+        return codex_provider_id(selected)
     if selected == "openrouter":
         return (configured or "openrouter") if allow_tools else "openrouter"
     return selected or configured
@@ -1123,6 +1135,8 @@ def claude_model_provider(
     requested_provider = normalize_model_provider(model_provider)
     if requested_provider == "openrouter":
         return "openrouter"
+    if is_custom_model_provider(requested_provider):
+        return "custom"
     if requested_provider:
         return None
     actual_env = env or os.environ
@@ -1144,7 +1158,7 @@ def _claude_model_name(model: str, env: dict[str, str], model_provider: str | No
 
 def _apply_claude_host_auth_home(env: dict[str, str], provider: str | None) -> dict[str, str]:
     auth_home = env.get("ENGINE_CLAUDE_AUTH_HOME") or os.getenv("ENGINE_CLAUDE_AUTH_HOME")
-    if provider == "openrouter" or not auth_home or _env_enabled("ENGINE_CLAUDE_DOCKER_RUNNER"):
+    if provider in {"openrouter", "custom"} or not auth_home or _env_enabled("ENGINE_CLAUDE_DOCKER_RUNNER"):
         return env
     actual_env = dict(env)
     auth_home = str(Path(auth_home).expanduser())
@@ -1163,6 +1177,17 @@ def _apply_claude_host_auth_home(env: dict[str, str], provider: str | None) -> d
 
 def _claude_env(env: dict[str, str], model: str, model_provider: str | None = None) -> dict[str, str]:
     actual_env = dict(env)
+    if claude_model_provider(model, actual_env, model_provider) == "custom":
+        try:
+            custom = require_custom_llm(str(model_provider), expected_harness="claude-code")
+        except CustomLlmError as exc:
+            raise HarnessError(str(exc), code="configuration_error", harness="claude-code") from exc
+        actual_env["ANTHROPIC_BASE_URL"] = custom.base_url
+        actual_env["ANTHROPIC_AUTH_TOKEN"] = custom.api_key
+        actual_env["ANTHROPIC_API_KEY"] = ""
+        for key in CLAUDE_OPENROUTER_MODEL_ENV_KEYS:
+            actual_env[key] = model
+        return actual_env
     if claude_model_provider(model, actual_env, model_provider) == "openrouter":
         if not actual_env.get("OPENROUTER_API_KEY"):
             raise HarnessError("OPENROUTER_API_KEY is required when model provider is openrouter")
@@ -1663,6 +1688,7 @@ def codex_exec_command(
     codex_model_provider: str | None = None,
     max_subagents: int | None = None,
     fast_mode: bool = False,
+    custom_llm: CustomLlm | None = None,
 ) -> list[str]:
     """Build a Codex exec command while preserving scan-mode compatibility."""
 
@@ -1675,7 +1701,7 @@ def codex_exec_command(
         model = OPENROUTER_MODEL_ALIASES.get(model, model)
     command = ["codex"]
     selected_provider = normalize_model_provider(model_provider)
-    if allow_tools and selected_provider != "deepseek":
+    if allow_tools and selected_provider not in {"deepseek"} and not is_custom_model_provider(selected_provider):
         command.append("--search")
     command.extend(["exec", "--json", "-C", repo_dir, "-m", model])
     if allow_tools:
@@ -1708,6 +1734,10 @@ def codex_exec_command(
         command.extend(["-c", 'model_providers.openrouter.wire_api="responses"'])
     if cli_model_provider == "deepseek":
         _append_deepseek_codex_config(command)
+    if is_custom_model_provider(selected_provider):
+        if custom_llm is None:
+            raise HarnessError("Custom LLM configuration is missing.", code="configuration_error", harness="codex")
+        command.extend(codex_custom_config_args(custom_llm))
     if cli_model_provider:
         command.extend(["-c", f"model_provider={json.dumps(cli_model_provider)}"])
     if thinking_effort and thinking_effort != "default":
@@ -1738,6 +1768,7 @@ class CodexHarness:
         self.fast_mode = bool(fast_mode)
         self.runner_memory_mb = max(0, int(runner_memory_mb))
         self.runner_memory_reservation_mb = max(0, int(runner_memory_reservation_mb))
+        self._custom_llm: CustomLlm | None = None
 
     def run(
         self,
@@ -1766,7 +1797,15 @@ class CodexHarness:
         allow_tools: bool,
         runner_image: str | None,
     ) -> HarnessResult:
-        actual_env = env if env is not None else _base_env()
+        actual_env = dict(env if env is not None else _base_env())
+        custom_llm = None
+        if is_custom_model_provider(self.model_provider):
+            try:
+                custom_llm = require_custom_llm(str(self.model_provider), expected_harness="codex")
+            except CustomLlmError as exc:
+                raise HarnessError(str(exc), code="configuration_error", harness="codex") from exc
+            actual_env[CUSTOM_LLM_ENV_KEY] = custom_llm.api_key
+        self._custom_llm = custom_llm
         temp_parent = actual_env.get("HOME")
         if not temp_parent or not Path(temp_parent).is_dir():
             temp_parent = None
@@ -1787,6 +1826,7 @@ class CodexHarness:
                 allow_tools=allow_tools,
                 max_subagents=self.max_subagents if allow_tools else None,
                 fast_mode=self.fast_mode,
+                custom_llm=custom_llm,
             )
             if allow_tools:
                 cmd = _scan_docker_command(
@@ -1912,6 +1952,8 @@ class CodexHarness:
         )
         if cli_model_provider == "deepseek":
             _append_deepseek_codex_config(cmd)
+        if self._custom_llm is not None:
+            cmd.extend(codex_custom_config_args(self._custom_llm))
         if cli_model_provider:
             cmd.extend(["-c", f"model_provider={json.dumps(cli_model_provider)}"])
         if thinking_effort and thinking_effort != "default":

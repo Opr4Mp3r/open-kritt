@@ -15,6 +15,7 @@ from jsonschema import Draft202012Validator
 
 from .account_activity import filter_account_environment, read_account_activity
 from .codex_auth import preserve_codex_auth_metadata
+from .custom_llm import is_custom_model_provider, load_custom_llm
 from .harnesses import HarnessError, harness_failure_retry_count, harness_for, normalize_harness_name
 from .prompting import append_schema_prompt
 from .provider_credentials import provider_environment
@@ -607,7 +608,39 @@ def validate_generation_payload(kind: str, payload: dict[str, Any]) -> dict[str,
     return validate_generated_artifact(kind, _normalize_raw_artifact(kind, raw_artifact))
 
 
-def validate_generation_job(job: dict[str, Any]) -> dict[str, str]:
+def _reject_unusable_custom_provider(
+    provider: str,
+    harness: str,
+    model: Any,
+    errors: list[dict[str, str]],
+    credentials_path: str | None,
+) -> None:
+    """Match the API: a custom id is usable only when that saved endpoint fits this harness."""
+
+    custom = load_custom_llm(provider, credentials_path=credentials_path)
+    if custom is None or not custom.enabled or not custom.base_url or not custom.api_key:
+        _error(errors, "model_provider", "The selected custom LLM is not configured.")
+        return
+    if custom.harness != harness:
+        _error(
+            errors,
+            "harness",
+            f'Harness "{harness}" is not compatible with custom LLM "{custom.name}". Use {custom.harness}.',
+        )
+    selected_model = model.strip() if isinstance(model, str) else ""
+    if selected_model and custom.models and selected_model not in custom.models:
+        _error(errors, "model", f'Model "{selected_model}" is not available for custom LLM "{custom.name}".')
+    if custom.harness == "codex" and custom.wire_api != "responses":
+        _error(
+            errors,
+            "model_provider",
+            'Codex custom LLMs must use the OpenAI Responses protocol. wire_api="chat" is not supported.',
+        )
+    elif custom.harness == "claude-code" and custom.wire_api != "anthropic":
+        _error(errors, "model_provider", "Claude Code custom LLMs must use the Anthropic Messages protocol.")
+
+
+def validate_generation_job(job: dict[str, Any], *, credentials_path: str | None = None) -> dict[str, str]:
     """Defensively validate queued work before invoking an external harness."""
 
     errors: list[dict[str, str]] = []
@@ -625,12 +658,15 @@ def validate_generation_job(job: dict[str, Any]) -> dict[str, str]:
     elif len(model.strip()) > MODEL_ID_MAX_LENGTH:
         _error(errors, "model", f"Model must be {MODEL_ID_MAX_LENGTH} characters or fewer.")
     provider = job.get("model_provider")
-    if not isinstance(provider, str) or provider not in MODEL_PROVIDERS:
+    custom_provider = isinstance(provider, str) and is_custom_model_provider(provider)
+    if not isinstance(provider, str) or (provider not in MODEL_PROVIDERS and not custom_provider):
         _error(errors, "model_provider", "Model provider is not supported.")
     raw_harness = job.get("harness")
     harness = normalize_harness_name(raw_harness) if isinstance(raw_harness, str) else ""
     if not harness:
         _error(errors, "harness", "Harness is required.")
+    elif custom_provider:
+        _reject_unusable_custom_provider(provider, harness, model, errors, credentials_path)
     elif isinstance(provider, str) and harness not in MODEL_PROVIDER_HARNESSES.get(provider, frozenset()):
         _error(errors, "harness", f'Harness "{harness}" is not compatible with model provider "{provider}".')
     thinking_effort = job.get("thinking_effort")

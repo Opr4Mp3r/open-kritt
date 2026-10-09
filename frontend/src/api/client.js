@@ -159,6 +159,10 @@ export const api = {
   updateScan: (id, body) => request(`/scans/${id}`, { method: 'PATCH', body }),
   // model providers currently configured for the engine
   modelProviders: () => request('/model-providers'),
+  customLlms: () => request('/custom-llms'),
+  createCustomLlm: (body) => request('/custom-llms', { method: 'POST', body }),
+  updateCustomLlm: (id, body) => request(`/custom-llms/${encodeURIComponent(id)}`, { method: 'PATCH', body }),
+  deleteCustomLlm: (id) => request(`/custom-llms/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   // configured providers and their selectable model catalogs
   modelCatalog: () => request('/model-catalog'),
   // provider accounts, provider login sessions, and the managed OpenRouter key

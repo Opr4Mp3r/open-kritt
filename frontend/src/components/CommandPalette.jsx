@@ -10,6 +10,7 @@ const STATIC = [
   { type: 'Page', label: 'Scans', to: '/scans' },
   { type: 'Page', label: 'Settings', to: '/settings' },
   { type: 'Page', label: 'Accounts', to: '/accounts' },
+  { type: 'Page', label: 'Custom LLMs', to: '/custom-llms' },
   { type: 'Page', label: 'Steps', to: '/steps' },
   { type: 'Page', label: 'Agent skills', to: '/agent-skills' },
   { type: 'Page', label: 'Severity rankers', to: '/severity-rankers' },

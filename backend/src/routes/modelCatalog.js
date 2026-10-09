@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { prisma } from '../db.js';
+import { customModelCatalogEntries } from '../lib/customLlm.js';
 import { buildModelCatalogResponse, hasModelCatalog } from '../lib/modelCatalog.js';
 import { configuredModelProviders } from '../lib/modelProviders.js';
 
@@ -21,7 +22,9 @@ export function createModelCatalogRouter({
       const providers = getConfiguredProviders();
       const catalogProviders = providers.filter(hasModelCatalog);
       const catalogs = await getCatalogs(catalogProviders);
-      res.json(buildModelCatalogResponse(providers, catalogs));
+      const response = buildModelCatalogResponse(providers, catalogs);
+      response.providers.push(...customModelCatalogEntries());
+      res.json(response);
     } catch (e) {
       next(e);
     }

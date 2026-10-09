@@ -18,6 +18,7 @@ import Steps from './pages/Steps.jsx';
 import AiGeneration from './pages/AiGeneration.jsx';
 import Accounts from './pages/Accounts.jsx';
 import Settings from './pages/Settings.jsx';
+import CustomLlms from './pages/CustomLlms.jsx';
 
 // Data router (createBrowserRouter) so pages can use useBlocker to guard
 // against navigating away from unsaved work.
@@ -37,6 +38,7 @@ export const router = createBrowserRouter(
         { path: 'scans/:id', element: <ScanDetail /> },
         { path: 'scans/:scanId/vulnerabilities/:vulnId', element: <VulnerabilityPage /> },
         { path: 'settings', element: <Settings /> },
+        { path: 'custom-llms', element: <CustomLlms /> },
         { path: 'accounts', element: <Accounts /> },
         { path: 'post-scripts', element: <PostScripts /> },
         { path: 'post-scripts/generate', element: <AiGeneration kind="post_script" /> },

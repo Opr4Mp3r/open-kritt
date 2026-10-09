@@ -1,4 +1,9 @@
 export const MODEL_PROVIDER_IDS = ['codex', 'claude', 'openrouter', 'xai', 'deepseek'];
+export const CUSTOM_MODEL_PROVIDER_RE = /^custom:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export function isCustomModelProvider(provider) {
+  return CUSTOM_MODEL_PROVIDER_RE.test(normalizedProviderId(provider));
+}
 export const MODEL_CATALOG_STATUSES = ['ready', 'loading', 'unavailable'];
 const SAFE_MODEL_NOTE_URLS = new Set(['https://chatgpt.com/cyber']);
 
@@ -76,7 +81,10 @@ export function configuredModelCatalog(payload) {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
 
     const provider = normalizedProviderId(entry.provider);
-    if (!MODEL_PROVIDER_IDS.includes(provider) || catalog[provider]) continue;
+    const custom = isCustomModelProvider(provider);
+    if ((!MODEL_PROVIDER_IDS.includes(provider) && !custom) || catalog[provider]) continue;
+    const customHarness = normalizedString(entry.harness);
+    if (custom && customHarness !== 'codex' && customHarness !== 'claude-code') continue;
 
     const models = [];
     const seenModels = new Set();
@@ -99,7 +107,13 @@ export function configuredModelCatalog(payload) {
           : listedDefault;
     const status = MODEL_CATALOG_STATUSES.includes(entry.status) ? entry.status : 'unavailable';
 
-    catalog[provider] = { input, models, defaultModel, status };
+    catalog[provider] = {
+      input,
+      models,
+      defaultModel,
+      status,
+      ...(custom ? { harness: customHarness, label: normalizedString(entry.label) || provider } : {}),
+    };
   }
 
   return catalog;
@@ -164,7 +178,7 @@ export function modelForCatalogChange(model, previousProvider, nextProvider, cat
 export function thinkingEffortsForModel(catalog, provider, model, fallback, harness) {
   const providerEfforts = PROVIDER_THINKING_EFFORTS[normalizedProviderId(provider)];
   const fallbackEfforts = providerEfforts || (Array.isArray(fallback) ? fallback : []);
-  const selectedHarness = normalizedString(harness) || defaultHarnessForModelProvider(provider);
+  const selectedHarness = normalizedString(harness) || defaultHarnessForModelProvider(provider, catalog);
   const harnessEfforts = HARNESS_THINKING_EFFORTS[selectedHarness] || [];
   const selected = modelsForModelProvider(catalog, provider).find(
     (candidate) => candidate.id === normalizedString(model)
@@ -192,15 +206,25 @@ export function configuredModelProviders(payload) {
   if (!Array.isArray(providers)) return [];
 
   const configured = new Set(providers.map((provider) => `${provider}`.trim().toLowerCase()));
-  return MODEL_PROVIDER_IDS.filter((provider) => configured.has(provider));
+  const custom = [];
+  for (const provider of configured) {
+    if (isCustomModelProvider(provider) && !custom.includes(provider)) custom.push(provider);
+  }
+  return [...MODEL_PROVIDER_IDS.filter((provider) => configured.has(provider)), ...custom];
 }
 
-export function harnessesForModelProvider(provider) {
+export function modelProviderLabel(provider, catalog) {
+  return modelCatalogForProvider(catalog, provider)?.label || provider;
+}
+
+export function harnessesForModelProvider(provider, catalog) {
+  const customHarness = modelCatalogForProvider(catalog, provider)?.harness;
+  if (customHarness) return [customHarness];
   return [...(PROVIDER_HARNESSES[normalizedProviderId(provider)] || [])];
 }
 
-export function defaultHarnessForModelProvider(provider) {
-  return harnessesForModelProvider(provider)[0] || '';
+export function defaultHarnessForModelProvider(provider, catalog) {
+  return harnessesForModelProvider(provider, catalog)[0] || '';
 }
 
 export function defaultModelForModelProvider(provider) {

@@ -1,5 +1,6 @@
 import { createApp } from './app.js';
-import { disconnect } from './db.js';
+import { disconnect, prisma } from './db.js';
+import { ensureCustomLlmRuntime } from './lib/customLlm.js';
 import { ensureDefaultSeverityRankers } from './lib/defaultSeverityRankers.js';
 import { ensureDefaultWorkflows } from './lib/defaultWorkflows.js';
 import { logger } from './lib/logger.js';
@@ -14,6 +15,16 @@ if (installedDefaults.length) {
 const installedRankers = await ensureDefaultSeverityRankers();
 if (installedRankers.length) {
   logger.info({ severityRankers: installedRankers }, 'installed default severity rankers');
+}
+
+try {
+  const providers = await ensureCustomLlmRuntime(prisma);
+  logger.info({ providers: providers.length }, 'custom LLM runtime snapshot is ready');
+} catch (error) {
+  if (error?.name !== 'CustomLlmCredentialError') throw error;
+  // Leave the previous snapshot untouched. Listening still lets an operator
+  // inspect other API routes; saves keep failing until the credential file is readable.
+  logger.error({ err: error }, 'custom LLM runtime snapshot was not published');
 }
 
 const app = createApp();

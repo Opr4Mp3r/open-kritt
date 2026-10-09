@@ -97,6 +97,24 @@ model ModelCatalog {
   @@schema("public")
 }
 
+/// A user-defined model endpoint for one harness. The API key is not stored here.
+model CustomLlmProvider {
+  id           String   @id
+  name         String
+  harness      String
+  baseUrl      String   @map("base_url")
+  wireApi      String   @map("wire_api")
+  models       Json
+  defaultModel String   @map("default_model")
+  enabled      Boolean  @default(true)
+  insertedAt   DateTime @default(now()) @map("inserted_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([harness], map: "custom_llm_providers_harness_idx")
+  @@map("custom_llm_providers")
+  @@schema("public")
+}
+
 /// A queued natural-language request to generate a workflow or post-script draft.
 /// The engine owns execution fields; a completed result remains a draft until the
 /// user explicitly persists it through the corresponding resource API.

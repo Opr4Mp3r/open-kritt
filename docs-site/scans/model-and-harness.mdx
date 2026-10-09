@@ -93,6 +93,36 @@ matching Codex provider configuration is installed.
 | `openrouter` | `claude-code` | `codex` (advanced) |
 | `xai` | `grok-build` | — |
 
+## Custom LLM
+
+A harness and an LLM provider are different layers. The harness is the agent
+runtime. The provider is the model endpoint that runtime calls.
+
+**Custom LLMs** on the settings page bind one endpoint to one harness. The
+engine writes only that endpoint's connection fields:
+
+- `codex` accepts an OpenAI Responses base URL. The pinned Codex CLI 0.145.0
+  rejects `wire_api="chat"`, and open·kritt does not translate Chat Completions
+  into Responses. The engine passes the endpoint as a Codex `model_providers`
+  entry with `wire_api="responses"` and keeps the API key in an environment
+  variable.
+- `claude-code` accepts an Anthropic Messages base URL and token.
+- `grok-build` stays on the official xAI account. It has no generic third-party
+  base URL.
+
+The key is stored with the other provider credentials and is not returned by
+the API. The engine loads the endpoint and the key from one runtime snapshot,
+so a job never sends a new key to the previous endpoint. Before it accepts
+requests, the backend publishes that snapshot when a custom LLM is stored or
+older credential files are already present. If the database has no custom LLM,
+those files are rewritten to an empty list, so a removed provider cannot stay
+selected. A process with no custom LLM and no older files does not create the
+credential directory. The engine waits for the snapshot when those older files
+are present, and exits without claiming scan or generation jobs if the snapshot
+does not appear. It does not assemble the endpoint and key from the separate
+catalog and credential files. After you save an enabled custom LLM, it appears
+in the scan model selector and is locked to its harness.
+
 The engine image currently contains an experimental Cursor adapter and `cursor-agent`, but
 the API/UI intentionally expose no provider/Cursor combination. Cursor headless login and
 OpenRouter's Cursor BYOK endpoint require separate configuration that open·kritt does not

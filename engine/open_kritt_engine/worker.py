@@ -1,4 +1,5 @@
 import logging
+import os
 import random
 import shutil
 import threading
@@ -21,6 +22,7 @@ from .artifact_cleanup import (
 from .claude_auth import ClaudeCredentialRateLimited
 from .codex_updater import CodexCliGate, CodexUpdater
 from .config import EngineConfig
+from .custom_llm import wait_for_custom_llm_runtime
 from .db import QUOTA_RETRY_MAX_SECONDS, Database, now_utc
 from .generation import GenerationRunner, GenerationValidationError
 from .harnesses import (
@@ -238,6 +240,17 @@ class Worker:
             self._next_artifact_cleanup = time.monotonic() + ARTIFACT_CLEANUP_INTERVAL_SECONDS
         self._schedule_docker_storage_cleanup()
         self._update_codex_at_startup()
+        # The backend publishes this file before it listens. An older credential
+        # directory is not two files that can be joined. Leave claiming to the
+        # next process start when that snapshot never arrives.
+        wait_seconds = os.getenv("OPEN_KRITT_CUSTOM_LLM_RUNTIME_WAIT_SECONDS", "120")
+        try:
+            wait_timeout = float(wait_seconds)
+        except ValueError:
+            wait_timeout = 120.0
+        if not wait_for_custom_llm_runtime(timeout_seconds=wait_timeout):
+            LOGGER.error("custom LLM runtime snapshot is unavailable; not claiming scan or generation jobs")
+            raise SystemExit(1)
 
         while True:
             self._schedule_artifact_cleanup()

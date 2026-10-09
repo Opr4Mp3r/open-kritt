@@ -18,6 +18,7 @@ import modelProvidersRouter from './routes/modelProviders.js';
 import generationsRouter from './routes/generations.js';
 import accountsRouter from './routes/accounts.js';
 import settingsRouter from './routes/settings.js';
+import customLlmsRouter from './routes/customLlms.js';
 import { ValidationError } from './lib/validation.js';
 
 export const JSON_BODY_LIMIT_BYTES = 8 * 1024 * 1024;
@@ -98,6 +99,7 @@ export function createApp({ env = process.env } = {}) {
   app.use('/api/generations', generationsRouter);
   app.use('/api/accounts', accountsRouter);
   app.use('/api/settings', settingsRouter);
+  app.use('/api/custom-llms', customLlmsRouter);
 
   // 404 for unknown API routes.
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found.' }));
@@ -110,6 +112,9 @@ export function createApp({ env = process.env } = {}) {
     }
     if (err instanceof ValidationError) {
       return res.status(422).json({ error: 'Validation failed.', errors: err.errors });
+    }
+    if (err?.name === 'CustomLlmCredentialError') {
+      return res.status(err.statusCode || 409).json({ error: err.message });
     }
     // Bad BigInt conversion from a malformed :id param.
     if (err instanceof SyntaxError && /Cannot convert .* to a BigInt/.test(err.message)) {

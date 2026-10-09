@@ -62,6 +62,20 @@ services:
         condition: service_healthy
       executor-view:
         condition: service_healthy
+    # Healthy only after server.js has published the custom LLM runtime snapshot
+    # and started listening. The engine waits on this before it claims jobs.
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3002/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -157,6 +171,8 @@ services:
       db:
         condition: service_healthy
       executor-view:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     restart: unless-stopped
     volumes:

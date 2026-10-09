@@ -86,6 +86,11 @@ describe('configuredModelProviders', () => {
     expect(configuredModelProviders({ providers: [] })).toEqual([]);
     expect(configuredModelProviders({})).toEqual([]);
   });
+
+  it('keeps configured custom LLM ids beside the built-in providers', () => {
+    const id = 'custom:11111111-1111-4111-8111-111111111111';
+    expect(configuredModelProviders({ providers: ['claude', id, 'not-a-provider'] })).toEqual(['claude', id]);
+  });
 });
 
 describe('model provider defaults', () => {

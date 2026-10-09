@@ -20,6 +20,7 @@ import {
   MODEL_PROVIDER_HARNESSES,
   HARNESS_THINKING_EFFORTS,
   isModelProviderHarnessCompatible,
+  isCustomModelProvider,
   GENERATION_KINDS,
   GENERATION_REQUEST_MAX_LENGTH,
   MODEL_ID_MAX_LENGTH,
@@ -71,8 +72,8 @@ function modelSelectionValidation(body, fieldPrefix = '') {
   }
   const rawProvider = typeof providerValue === 'string' ? providerValue.trim().toLowerCase() : DEFAULT_MODEL_PROVIDER;
   const modelProvider = rawProvider || DEFAULT_MODEL_PROVIDER;
-  if (!MODEL_PROVIDERS.includes(modelProvider)) {
-    push('model_provider', `Model provider must be one of: ${MODEL_PROVIDERS.join(', ')}.`);
+  if (!MODEL_PROVIDERS.includes(modelProvider) && !isCustomModelProvider(modelProvider)) {
+    push('model_provider', `Model provider must be one of: ${MODEL_PROVIDERS.join(', ')}, or a custom LLM id.`);
   }
 
   const harnessValue = body?.harness;

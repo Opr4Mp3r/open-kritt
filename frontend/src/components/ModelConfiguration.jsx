@@ -6,7 +6,9 @@ import { PROVIDER_LABELS, visibleProviderIds } from '../lib/providerVisibility.j
 import {
   defaultHarnessForModelProvider,
   harnessesForModelProvider,
+  isCustomModelProvider,
   isModelSelectionValid,
+  modelProviderLabel,
   MODEL_PROVIDER_IDS,
   modelCatalogForProvider,
   modelCatalogIsReady,
@@ -23,11 +25,13 @@ export function modelConfigurationForCatalog(current, providers, catalog) {
   const previousProvider = current?.model_provider || '';
   const modelProvider = providers.includes(previousProvider)
     ? previousProvider
-    : MODEL_PROVIDER_IDS.find((provider) => providers.includes(provider)) || '';
+    : MODEL_PROVIDER_IDS.find((provider) => providers.includes(provider)) ||
+      providers.find((provider) => isCustomModelProvider(provider)) ||
+      '';
   const model = modelForCatalogChange(current?.model || '', previousProvider, modelProvider, catalog);
-  const harness = harnessesForModelProvider(modelProvider).includes(current?.harness)
+  const harness = harnessesForModelProvider(modelProvider, catalog).includes(current?.harness)
     ? current.harness
-    : defaultHarnessForModelProvider(modelProvider);
+    : defaultHarnessForModelProvider(modelProvider, catalog);
   const thinkingEffort = thinkingEffortForModelChange(
     current?.thinking_effort || 'medium',
     thinkingEffortsForModel(catalog, modelProvider, model, THINKING_EFFORTS, harness)
@@ -41,7 +45,7 @@ export function modelConfigurationForCatalog(current, providers, catalog) {
 }
 
 export function modelConfigurationIsValid(value, providers, catalog) {
-  const compatibleHarnesses = harnessesForModelProvider(value.model_provider);
+  const compatibleHarnesses = harnessesForModelProvider(value.model_provider, catalog);
   const efforts = thinkingEffortsForModel(catalog, value.model_provider, value.model, THINKING_EFFORTS, value.harness);
   return (
     providers.includes(value.model_provider) &&
@@ -62,7 +66,7 @@ export default function ModelConfiguration({
 }) {
   const { visible } = useProviderVisibility();
   const providerConfigured = providers.includes(value.model_provider);
-  const compatibleHarnesses = harnessesForModelProvider(value.model_provider);
+  const compatibleHarnesses = harnessesForModelProvider(value.model_provider, catalog);
   const selectableModels = modelsForModelProvider(catalog, value.model_provider);
   const selectedModel = selectableModels.find((model) => model.id === value.model);
   const providerCatalog = modelCatalogForProvider(catalog, value.model_provider);
@@ -76,7 +80,8 @@ export default function ModelConfiguration({
     THINKING_EFFORTS,
     value.harness
   );
-  const providerName = PROVIDER_LABELS[value.model_provider] || 'selected provider';
+  const providerName =
+    PROVIDER_LABELS[value.model_provider] || modelProviderLabel(value.model_provider, catalog) || 'selected provider';
   let catalogMessage = '';
   if (providerConfigured && freeTextModel && !suggestionsReady) {
     if (catalogError) {
@@ -103,7 +108,7 @@ export default function ModelConfiguration({
 
   const changeProvider = (modelProvider) => {
     const model = modelForCatalogChange(value.model, value.model_provider, modelProvider, catalog);
-    const harness = defaultHarnessForModelProvider(modelProvider);
+    const harness = defaultHarnessForModelProvider(modelProvider, catalog);
     onChange({
       ...value,
       model_provider: modelProvider,
@@ -152,6 +157,7 @@ export default function ModelConfiguration({
               value={value.model_provider}
               onChange={(event) => changeProvider(event.target.value)}
               configuredProviders={providers}
+              catalog={catalog}
               disabled={disabled}
             />
           )}
@@ -274,6 +280,10 @@ export default function ModelConfiguration({
               <Link to="/accounts" style={{ color: 'var(--accent)' }}>
                 Add {unavailableProviders.length === 1 ? 'it' : 'them'} in Accounts
               </Link>
+              .{' '}
+              <Link to="/custom-llms" style={{ color: 'var(--accent)' }}>
+                或为 Codex / Claude Code 配置自定义 LLM
+              </Link>
               .
             </div>
           )}
@@ -300,8 +310,9 @@ function Field({ label, children }) {
   );
 }
 
-export function ProviderSelect({ id, value, onChange, configuredProviders, disabled }) {
+export function ProviderSelect({ id, value, onChange, configuredProviders, catalog, disabled }) {
   const { visible } = useProviderVisibility();
+  const customProviders = [...new Set([...(configuredProviders || []), value].filter(isCustomModelProvider))];
   return (
     <select
       id={id}
@@ -332,6 +343,11 @@ export function ProviderSelect({ id, value, onChange, configuredProviders, disab
           </option>
         );
       })}
+      {customProviders.map((provider) => (
+        <option key={provider} value={provider}>
+          {modelProviderLabel(provider, catalog)}
+        </option>
+      ))}
     </select>
   );
 }
