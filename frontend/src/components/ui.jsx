@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { statusMeta } from '../lib/format.js';
 
-export function Spinner({ label = 'Loading…' }) {
+export function Spinner({ label = '正在加载…' }) {
   return (
     <div
       style={{
@@ -42,14 +42,14 @@ export function ErrorState({ error, onRetry }) {
         fontSize: 13,
       }}
     >
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>Something went wrong</div>
-      <div style={{ color: 'var(--text-2)' }}>{error?.message || 'Failed to load.'}</div>
+      <div style={{ fontWeight: 600, marginBottom: 4 }}>发生错误</div>
+      <div style={{ color: 'var(--text-2)' }}>{error?.message || '加载失败。'}</div>
       {onRetry && (
         <span
           onClick={onRetry}
           style={{ display: 'inline-block', marginTop: 10, color: 'var(--accent)', cursor: 'pointer', fontSize: 12.5 }}
         >
-          Try again →
+          重试 →
         </span>
       )}
     </div>

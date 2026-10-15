@@ -3,37 +3,36 @@
 export function rateLimitPresentation(reasoning) {
   if (reasoning?.limit_kind === 'runner_resource_limited') {
     return {
-      label: 'Runner retry pending',
+      label: '运行器等待重试',
       message:
-        'The runner was killed. The cause is unknown: memory pressure, a container limit, or an external stop may be responsible. Check Docker/container events and engine logs. Exit 137 alone does not prove a memory shortage.',
+        '运行器已被终止。原因未知，可能是内存压力、容器限制或外部停止所致。请检查 Docker/容器事件和引擎日志。仅凭退出码 137 不能证明内存不足。',
       accountRelated: false,
     };
   }
   if (reasoning?.limit_kind === 'provider_throttled') {
     return {
-      label: 'Provider busy',
-      message: 'The provider temporarily throttled server capacity; your account usage quota was not exhausted.',
+      label: '提供商繁忙',
+      message: '提供商暂时限制了服务器容量；你的账户用量配额并未耗尽。',
       accountRelated: false,
     };
   }
   if (reasoning?.limit_kind === 'subagent_limited') {
     return {
-      label: 'Subagent limit',
-      message:
-        'Codex reached a separate premium limit while starting a subagent; the account usage quota was not exhausted.',
+      label: '子智能体限制',
+      message: 'Codex 启动子智能体时触及了单独的高级功能限制；账户用量配额并未耗尽。',
       accountRelated: false,
     };
   }
   if (reasoning?.limit_kind === 'account_quota_limited') {
     return {
-      label: 'Quota exhausted',
-      message: 'The provider reports that this account reached its usage quota.',
+      label: '配额已耗尽',
+      message: '提供商报告此账户已达到用量配额。',
       accountRelated: true,
     };
   }
   return {
-    label: 'Rate limited',
-    message: 'The provider is temporarily rate limiting requests.',
+    label: '请求受限',
+    message: '提供商暂时限制了请求频率。',
     accountRelated: true,
   };
 }
@@ -54,19 +53,17 @@ export function providerCapacityAutoscalePresentation(reasoning) {
   const subagentLimited = reasoning?.limit_kind === 'subagent_limited';
   const runnerLimited = reasoning?.limit_kind === 'runner_resource_limited';
   const label = runnerLimited
-    ? 'Runner-termination autoscale'
+    ? '运行器终止后自动缩容'
     : subagentLimited
-      ? 'Subagent-limit autoscale'
-      : 'Provider-capacity autoscale';
+      ? '子智能体限制后自动缩容'
+      : '提供商容量不足时自动缩容';
   const cause = runnerLimited ? 'runner-termination' : subagentLimited ? 'subagent-limit' : 'capacity';
   return {
     initialCap,
     workerCap,
     reductions,
-    compact: `${label}: ${initialCap} → ${workerCap} worker${workerCap === 1 ? '' : 's'}`,
-    message: `${label} reduced this scan from ${initialCap} to ${workerCap} worker${
-      workerCap === 1 ? '' : 's'
-    } after ${reductions} ${cause} ${reductions === 1 ? 'event' : 'events'}. Future ${cause} errors lower it one worker at a time.`,
+    compact: `${label}：${initialCap} → ${workerCap} 个工作进程`,
+    message: `${label}：发生 ${reductions} 次${cause === 'capacity' ? '容量' : cause === 'runner-termination' ? '运行器终止' : '子智能体限制'}事件后，此扫描的工作进程数从 ${initialCap} 降至 ${workerCap}。后续再次遇到此类错误时会逐次减少一个工作进程。`,
   };
 }
 
@@ -79,55 +76,52 @@ export function storageWarningPresentation(reasoning, status = 'running') {
   const requiredGiB = toGiB(warning.required_bytes);
   const freeGiB = toGiB(warning.free_bytes);
   const unavailable = warning.code === 'storage_check_unavailable';
-  const measured = freeGiB === null ? 'available space was not recorded' : `${Number(freeGiB.toFixed(3))} GiB was free`;
-  const required =
-    requiredGiB === null
-      ? 'the threshold was not recorded'
-      : `Minimum free storage was ${Number(requiredGiB.toFixed(3))} GiB`;
+  const measured = freeGiB === null ? '未记录可用空间' : `可用空间为 ${Number(freeGiB.toFixed(3))} GiB`;
+  const required = requiredGiB === null ? '未记录阈值' : `最低可用空间为 ${Number(requiredGiB.toFixed(3))} GiB`;
   const recordedAt = Date.parse(warning.detected_at);
   return {
     code: warning.code,
     freeGiB,
     requiredGiB,
-    title: unavailable ? 'Storage check unavailable' : 'Waiting for storage',
+    title: unavailable ? '无法检查存储空间' : '等待存储空间充足',
     message:
       (unavailable
-        ? 'Free space on the engine-data filesystem could not be measured; a disk shortage has not been established.'
-        : `At the last reported check, ${measured} on the filesystem containing engine data; ${required}.`) +
-      ' New container starts wait for a successful check with enough space. Checks repeat automatically; running containers continue.',
+        ? '无法测量引擎数据所在文件系统的可用空间；目前尚不能确认磁盘空间不足。'
+        : `最近一次检查结果：引擎数据所在文件系统${measured}；${required}。`) +
+      '只有检查成功且空间充足时才会启动新容器。系统会自动重复检查，正在运行的容器不受影响。',
     detail:
-      'This is the engine-data filesystem, which may differ from Docker image storage or other host disks. The minimum is a safety margin, not an estimate of the space this project will need.' +
+      '这是引擎数据所在的文件系统，可能不同于 Docker 镜像存储或主机上的其他磁盘。此最低值是安全余量，并非对项目所需空间的估算。' +
       (freeGiB !== null && requiredGiB !== null && !unavailable
-        ? ` GiB values are rounded; the recorded comparison is ${warning.free_bytes} bytes free versus ${warning.required_bytes} bytes required.`
+        ? ` GiB 数值经过四舍五入；记录的比较值为可用 ${warning.free_bytes} 字节，最低需要 ${warning.required_bytes} 字节。`
         : ''),
     remedy: unavailable
-      ? 'Check that the engine-data mount is accessible and review the engine logs. Restore the storage measurement before changing the safeguard.'
-      : 'Free space or expand the disk containing engine data. For smaller projects, lowering Minimum free storage may allow starts with less free space, but increases the risk of filling the disk. It does not free space or guarantee completion.',
+      ? '检查引擎数据挂载点是否可访问，并查看引擎日志。请先恢复存储空间测量，再调整保护设置。'
+      : '请清理空间或扩展引擎数据所在磁盘。对于较小的项目，降低最低可用空间阈值可能允许在空间较少时启动，但会增加磁盘写满的风险。此操作不会释放空间，也不保证任务能够完成。',
     observedAt: Number.isFinite(recordedAt) ? new Date(recordedAt).toISOString() : null,
-    fixLinks: [{ label: 'Minimum free storage', url: '/settings#setting-minFreeStorageGb' }],
+    fixLinks: [{ label: '最低可用存储空间', url: '/settings#setting-minFreeStorageGb' }],
   };
 }
 
 export function statusMeta(status, reasoning) {
   const map = {
-    completed: { label: 'Completed', color: 'var(--ok)', bg: 'var(--ok-bg)', pulse: 'none' },
-    running: { label: 'Running', color: 'var(--run)', bg: 'var(--run-bg)', pulse: 'okpulse 1.4s ease-in-out infinite' },
+    completed: { label: '已完成', color: 'var(--ok)', bg: 'var(--ok-bg)', pulse: 'none' },
+    running: { label: '运行中', color: 'var(--run)', bg: 'var(--run-bg)', pulse: 'okpulse 1.4s ease-in-out infinite' },
     prewarming_cache: {
-      label: 'Prewarming cache',
+      label: '正在预热缓存',
       color: 'var(--pend)',
       bg: 'var(--pend-bg)',
       pulse: 'okpulse 1.4s ease-in-out infinite',
     },
     post_processing: {
-      label: 'Post-processing',
+      label: '后处理中',
       color: 'var(--run)',
       bg: 'var(--run-bg)',
       pulse: 'okpulse 1.4s ease-in-out infinite',
     },
-    paused: { label: 'Paused', color: 'var(--stop)', bg: 'var(--stop-bg)', pulse: 'none' },
-    queued: { label: 'Queued', color: 'var(--pend)', bg: 'var(--pend-bg)', pulse: 'none' },
+    paused: { label: '已暂停', color: 'var(--stop)', bg: 'var(--stop-bg)', pulse: 'none' },
+    queued: { label: '排队中', color: 'var(--pend)', bg: 'var(--pend-bg)', pulse: 'none' },
     pending: {
-      label: 'Pending',
+      label: '等待中',
       color: 'var(--pend)',
       bg: 'var(--pend-bg)',
       pulse: 'okpulse 1.8s ease-in-out infinite',
@@ -138,8 +132,8 @@ export function statusMeta(status, reasoning) {
       bg: 'var(--pend-bg)',
       pulse: 'okpulse 1.8s ease-in-out infinite',
     },
-    failed: { label: 'Failed', color: 'var(--fail)', bg: 'var(--fail-bg)', pulse: 'none' },
-    stopped: { label: 'Stopped', color: 'var(--stop)', bg: 'var(--stop-bg)', pulse: 'none' },
+    failed: { label: '失败', color: 'var(--fail)', bg: 'var(--fail-bg)', pulse: 'none' },
+    stopped: { label: '已停止', color: 'var(--stop)', bg: 'var(--stop-bg)', pulse: 'none' },
   };
   return map[status] || { label: status, color: 'var(--text-3)', bg: 'var(--surface-2)', pulse: 'none' };
 }
@@ -148,10 +142,10 @@ export function rateLimitRetryText(reasoning, now = Date.now()) {
   const retryCount =
     Number.isInteger(reasoning?.retry_count) && reasoning.retry_count > 0 ? reasoning.retry_count : null;
   const retryAt = Date.parse(reasoning?.retry_after || '');
-  let timing = 'when the retry is due';
+  let timing = '到达重试时间后';
   if (Number.isFinite(retryAt)) {
     const remainingSeconds = Math.max(0, Math.ceil((retryAt - now) / 1000));
-    if (remainingSeconds === 0) timing = 'shortly';
+    if (remainingSeconds === 0) timing = '即将';
     else {
       const hours = Math.floor(remainingSeconds / 3600);
       const minutes = Math.floor((remainingSeconds % 3600) / 60);
@@ -163,10 +157,10 @@ export function rateLimitRetryText(reasoning, now = Date.now()) {
       ]
         .filter(Boolean)
         .join(' ');
-      timing = `in ${countdown}`;
+      timing = `${countdown} 后`;
     }
   }
-  return `Automatic retry${retryCount ? ` #${retryCount}` : ''} ${timing}.`;
+  return `自动重试${retryCount ? ` #${retryCount}` : ''}：${timing}。`;
 }
 
 export function sevColor(sev) {

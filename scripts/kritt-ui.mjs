@@ -501,8 +501,8 @@ export class FullscreenTerminal {
       subtitle,
       details: wrap(message, Math.max(20, this.dimensions().width - 4)).map((line) => `  ${line}`),
       options: [
-        { id: 'cancel', label: 'Cancel', description: 'Keep the current configuration' },
-        { id: 'confirm', label: confirmLabel, description: 'Apply this change' },
+        { id: 'cancel', label: '取消', description: '保留当前配置' },
+        { id: 'confirm', label: confirmLabel, description: '应用此更改' },
       ],
       footer: '↑↓ navigate   Enter select   Esc cancel   Ctrl+C exit',
     });
@@ -577,7 +577,7 @@ function statusDetails(status) {
 }
 
 async function showInfo(terminal, { title, message }) {
-  await terminal.notice({ title, subtitle: 'About this option', message });
+  await terminal.notice({ title, subtitle: '选项说明', message });
 }
 
 async function manageEnvironmentItem(terminal, context, item) {
@@ -590,10 +590,10 @@ async function manageEnvironmentItem(terminal, context, item) {
       subtitle: present ? 'Credential is configured' : 'Credential is not configured',
       details: [item.info],
       options: [
-        { id: 'set', label: present ? 'Replace credential' : 'Set credential', description: 'Input remains hidden' },
-        { id: 'unset', label: 'Unset credential', description: 'Remove it from .env' },
-        { id: 'info', label: 'What is this?', description: 'Read how this option is used' },
-        { id: 'back', label: 'Back', description: 'Return to setup' },
+        { id: 'set', label: present ? '替换凭据' : '设置凭据', description: '输入内容会保持隐藏' },
+        { id: 'unset', label: '取消设置凭据', description: '从 .env 中移除' },
+        { id: 'info', label: '这是什么？', description: '查看此选项的用途' },
+        { id: 'back', label: '返回', description: '返回设置' },
       ],
     });
 
@@ -605,7 +605,7 @@ async function manageEnvironmentItem(terminal, context, item) {
     if (choice === 'set') {
       const value = await terminal.readInput({
         title: item.label,
-        subtitle: 'Set credential',
+        subtitle: '设置凭据',
         description:
           managedProvider
             ? `Paste the ${item.label}. It will be stored in .env and mirrored to the managed credential store used by running services.`
@@ -616,8 +616,8 @@ async function manageEnvironmentItem(terminal, context, item) {
       if (!value) {
         await terminal.notice({
           title: item.label,
-          subtitle: 'Nothing changed',
-          message: 'Enter a value or press Esc to cancel.',
+          subtitle: '未作更改',
+          message: '请输入一个值，或按 Esc 取消。',
         });
         continue;
       }
@@ -627,15 +627,15 @@ async function manageEnvironmentItem(terminal, context, item) {
       await setEnvValue(context.envFile, item.key, value);
       await terminal.notice({
         title: item.label,
-        subtitle: 'Saved',
-        message: 'The credential was saved without displaying its value.',
+        subtitle: '已保存',
+        message: '凭据已保存，未显示其内容。',
       });
       continue;
     }
     if (
       await terminal.confirm({
         title: item.label,
-        subtitle: 'Unset credential',
+        subtitle: '取消设置凭据',
         message:
           managedProvider
             ? `Unset ${item.label}? This removes the managed key and prevents the initial .env value from being imported again.`
@@ -649,7 +649,7 @@ async function manageEnvironmentItem(terminal, context, item) {
       await setEnvValue(context.envFile, item.key, '');
       await terminal.notice({
         title: item.label,
-        subtitle: 'Unset',
+        subtitle: '已取消设置',
         message:
           managedProvider
             ? 'The credential was removed from .env and the managed store.'
@@ -662,8 +662,8 @@ async function manageEnvironmentItem(terminal, context, item) {
 async function confirmExternalDestination(terminal, context, targetPath) {
   if (isWithinProject(context.rootDir, targetPath)) return true;
   return terminal.confirm({
-    title: 'External login directory',
-    subtitle: 'Credential destination',
+    title: '外部登录目录',
+    subtitle: '凭据保存位置',
     message: `The configured Codex login directory is outside this project: ${targetPath}`,
     confirmLabel: 'Save credentials there',
   });
@@ -677,7 +677,7 @@ async function dockerReady(terminal, context, title) {
   if (preflight.ok) return true;
   await terminal.notice({
     title,
-    subtitle: 'Docker is not ready',
+    subtitle: 'Docker 尚未就绪',
     message: dockerEnvironmentMessage(preflight),
   });
   return false;
@@ -689,7 +689,7 @@ async function manageCodexLogin(terminal, context) {
     const targetPath = join(status.codexHome, 'auth.json');
     const defaultSource = join(context.homeDir, '.codex', 'auth.json');
     const choice = await terminal.choose({
-      title: 'Codex login',
+      title: 'Codex 登录',
       subtitle: status.codexLoginPresent
         ? 'Login saved for this project'
         : status.codexLoginIssue === 'permission'
@@ -697,11 +697,11 @@ async function manageCodexLogin(terminal, context) {
           : 'No saved project login',
       details: [`Project login location: ${status.codexHome}`],
       options: [
-        { id: 'login', label: 'Sign in with Docker', description: 'Use a device code (recommended)' },
-        { id: 'import', label: 'Import local login', description: 'Copy an existing auth.json' },
-        { id: 'remove', label: 'Remove saved login', description: 'Delete this project login only' },
-        { id: 'info', label: 'What is this?', description: 'Read how persisted login works' },
-        { id: 'back', label: 'Back', description: 'Return to setup' },
+        { id: 'login', label: '通过 Docker 登录', description: '使用设备代码（推荐）' },
+        { id: 'import', label: '导入本地登录', description: '复制现有 auth.json' },
+        { id: 'remove', label: '移除已保存的登录', description: '仅删除此项目的登录信息' },
+        { id: 'info', label: '这是什么？', description: '了解登录信息的持久化方式' },
+        { id: 'back', label: '返回', description: '返回设置' },
       ],
     });
 
@@ -716,9 +716,9 @@ async function manageCodexLogin(terminal, context) {
     if (choice === 'remove') {
       if (
         await terminal.confirm({
-          title: 'Codex login',
-          subtitle: 'Remove saved login',
-          message: 'Remove the saved Codex login for this project?',
+          title: 'Codex 登录',
+          subtitle: '移除已保存的登录',
+          message: '要移除此项目已保存的 Codex 登录吗？',
           confirmLabel: 'Remove login',
         })
       ) {
@@ -734,8 +734,8 @@ async function manageCodexLogin(terminal, context) {
     }
     if (choice === 'import') {
       const sourcePath = await terminal.readInput({
-        title: 'Import Codex login',
-        subtitle: 'Source auth.json',
+        title: '导入 Codex 登录',
+        subtitle: '来源 auth.json',
         description: `Enter the auth.json path, or leave it unchanged to use ${defaultSource}.`,
         initialValue: defaultSource,
       });
@@ -758,7 +758,7 @@ async function manageCodexLogin(terminal, context) {
     if (!(await confirmExternalDestination(terminal, context, dirname(targetPath)))) continue;
     if (!(await dockerReady(terminal, context, CODEX_LOGIN.label))) continue;
     await terminal.suspend();
-    let result = { ok: false, message: 'Codex login did not complete.' };
+    let result = { ok: false, message: 'Codex 登录未完成。' };
     try {
       result = await saveDockerCodexLogin({
         io: context.io,
@@ -783,14 +783,14 @@ async function manageClaudeLogin(terminal, context) {
   while (true) {
     const status = await getSetupStatus(context);
     const choice = await terminal.choose({
-      title: 'Claude login',
+      title: 'Claude 登录',
       subtitle: status.claudeLoginPresent ? 'Login saved for this project' : 'No saved project login',
       details: [`Project login location: ${status.claudeHome}`],
       options: [
-        { id: 'login', label: 'Sign in with Docker', description: 'Use the official Claude browser flow' },
-        { id: 'remove', label: 'Remove saved login', description: 'Sign Claude out for this project' },
-        { id: 'info', label: 'What is this?', description: 'Read how persisted login works' },
-        { id: 'back', label: 'Back', description: 'Return to setup' },
+        { id: 'login', label: '通过 Docker 登录', description: '使用 Claude 官方浏览器登录流程' },
+        { id: 'remove', label: '移除已保存的登录', description: '退出此项目的 Claude 登录' },
+        { id: 'info', label: '这是什么？', description: '了解登录信息的持久化方式' },
+        { id: 'back', label: '返回', description: '返回设置' },
       ],
     });
 
@@ -802,17 +802,17 @@ async function manageClaudeLogin(terminal, context) {
     if (choice === 'remove') {
       if (
         await terminal.confirm({
-          title: 'Claude login',
-          subtitle: 'Remove saved login',
-          message: 'Remove the saved Claude login for this project?',
+          title: 'Claude 登录',
+          subtitle: '移除已保存的登录',
+          message: '要移除此项目已保存的 Claude 登录吗？',
           confirmLabel: 'Remove login',
         })
       ) {
         await removeClaudeAuth(status.claudeHome);
         await terminal.notice({
-          title: 'Claude login',
-          subtitle: 'Removed',
-          message: 'Claude was signed out. Profile settings were preserved.',
+          title: 'Claude 登录',
+          subtitle: '已移除',
+          message: '已退出 Claude 登录。个人资料设置已保留。',
         });
       }
       continue;
@@ -845,9 +845,9 @@ async function runSetupScreen(terminal, context) {
   const created = await ensureEnvFile(context);
   if (created) {
     await terminal.notice({
-      title: 'Setup',
-      subtitle: 'Environment initialized',
-      message: 'Created .env from .env.example. Choose one model-access option to continue.',
+      title: '设置',
+      subtitle: '环境已初始化',
+      message: '已根据 .env.example 创建 .env。请选择一种模型访问方式以继续。',
     });
   }
   await syncCodexLoginStatus(context);
@@ -861,7 +861,7 @@ async function runSetupScreen(terminal, context) {
       options: [
         {
           id: 'codex-login',
-          label: 'Codex login',
+          label: 'Codex 登录',
           description: status.codexLoginPresent
             ? 'recommended - present'
             : status.codexLoginIssue === 'permission'
@@ -870,7 +870,7 @@ async function runSetupScreen(terminal, context) {
         },
         {
           id: 'claude-login',
-          label: 'Claude login',
+          label: 'Claude 登录',
           description: status.claudeLoginPresent ? 'present' : 'sign in with a Claude subscription',
         },
         ...providerEnvironmentItems().map((item) => ({
@@ -880,10 +880,10 @@ async function runSetupScreen(terminal, context) {
         })),
         {
           id: 'GITHUB_TOKEN',
-          label: 'GitHub token',
+          label: 'GitHub 令牌',
           description: status.valuesPresent.GITHUB_TOKEN ? 'present' : 'optional for private repositories',
         },
-        { id: 'back', label: 'Back', description: 'Return to the main menu' },
+        { id: 'back', label: '返回', description: '返回主菜单' },
       ],
     });
 
@@ -905,8 +905,8 @@ async function runStartScreen(terminal, context) {
   const status = await getSetupStatus(context);
   if (!status.envExists || !status.providerPresent) {
     const choice = await terminal.choose({
-      title: 'Start',
-      subtitle: 'Setup is incomplete',
+      title: '启动',
+      subtitle: '设置尚未完成',
       details: [
         !status.envExists
           ? 'No .env file exists yet.'
@@ -916,20 +916,20 @@ async function runStartScreen(terminal, context) {
         'Choose one model-access option in Setup. GitHub access alone cannot run scans.',
       ],
       options: [
-        { id: 'setup', label: 'Open setup', description: 'Configure model access' },
-        { id: 'back', label: 'Back', description: 'Return to the main menu' },
+        { id: 'setup', label: '打开设置', description: '配置模型访问方式' },
+        { id: 'back', label: '返回', description: '返回主菜单' },
       ],
     });
     return choice;
   }
 
   const choice = await terminal.choose({
-    title: 'Start',
-    subtitle: 'Ready to launch',
+    title: '启动',
+    subtitle: '已准备就绪',
     details: ['The terminal will switch to Docker Compose. Ctrl+C there stops the running stack.'],
     options: [
-      { id: 'launch', label: 'Start open-kritt', description: 'Run docker compose up --build' },
-      { id: 'back', label: 'Back', description: 'Return to the main menu' },
+      { id: 'launch', label: '启动 open-kritt', description: '运行 docker compose up --build' },
+      { id: 'back', label: '返回', description: '返回主菜单' },
     ],
   });
   return choice;
@@ -937,10 +937,10 @@ async function runStartScreen(terminal, context) {
 
 async function runHelpScreen(terminal) {
   await terminal.notice({
-    title: 'Help',
-    subtitle: 'open-kritt CLI',
+      title: '帮助',
+    subtitle: 'open-kritt 命令行工具',
     message:
-      'Setup creates .env when needed and lets you manage provider credentials, Codex login, and optional GitHub access. Start launches Docker Compose after model access is configured. Use Arrow keys to navigate and Enter to select.',
+      '设置会在需要时创建 .env，并允许你管理提供商凭据、Codex 登录和可选的 GitHub 访问。配置模型访问后，选择“启动”即可运行 Docker Compose 服务栈。使用方向键导航并按 Enter 选择。',
   });
 }
 
@@ -971,15 +971,15 @@ export async function runInteractiveCli(options = {}) {
       }
 
       const choice = await terminal.choose({
-        title: 'Welcome',
-        subtitle: 'Security research orchestration',
-        details: ['Choose one model-access option in Setup, start the stack, or learn how the CLI works.'],
+        title: '欢迎',
+        subtitle: '安全研究编排平台',
+        details: ['在设置中选择一种模型访问方式，启动服务栈，或了解命令行工具的用法。'],
         options: [
-          { id: 'setup', label: 'Setup', description: 'Configure provider credentials and Codex login' },
-          { id: 'start', label: 'Start', description: 'Launch the Docker Compose stack' },
-          { id: 'help', label: 'Help', description: 'View command guidance' },
+          { id: 'setup', label: '设置', description: '配置提供商凭据和 Codex 登录' },
+          { id: 'start', label: '启动', description: '启动 Docker Compose 服务栈' },
+          { id: 'help', label: '帮助', description: '查看命令说明' },
         ],
-        footer: '↑↓ navigate   Enter select   Esc or Ctrl+C exit',
+        footer: '↑↓ 导航   Enter 选择   Esc 或 Ctrl+C 退出',
       });
       if (choice === 'back') return { code: 0 };
       view = choice;

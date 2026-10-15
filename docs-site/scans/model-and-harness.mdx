@@ -1,6 +1,6 @@
 ---
-title: "Model and harness"
-description: "Choose the model, provider, harness, and reasoning effort for a scan."
+title: "模型与运行框架"
+description: "为扫描选择模型、提供商、运行框架和推理强度。"
 ---
 
 Each scan runs with a **model** driven through a **harness**. Together they decide which AI
@@ -117,11 +117,11 @@ requests, the backend publishes that snapshot when a custom LLM is stored or
 older credential files are already present. If the database has no custom LLM,
 those files are rewritten to an empty list, so a removed provider cannot stay
 selected. A process with no custom LLM and no older files does not create the
-credential directory. The engine waits for the snapshot when those older files
-are present, and exits without claiming scan or generation jobs if the snapshot
-does not appear. It does not assemble the endpoint and key from the separate
-catalog and credential files. After you save an enabled custom LLM, it appears
-in the scan model selector and is locked to its harness.
+credential directory. The engine waits for the snapshot when those older files are present, and exits without claiming scan or
+generation jobs if the snapshot does not appear. It does not assemble the
+endpoint and key from the separate catalog and credential files. After you save
+an enabled custom LLM, it appears in the scan model selector and is locked to
+its harness.
 
 The engine image currently contains an experimental Cursor adapter and `cursor-agent`, but
 the API/UI intentionally expose no provider/Cursor combination. Cursor headless login and

@@ -19,9 +19,9 @@ export default function ProviderVisibility({ configuredProviders = [], selected 
     <div style={{ margin: '12px 0', fontSize: 12.5, color: 'var(--text-2)' }}>
       <details>
         <summary style={{ cursor: 'pointer', color: 'var(--accent)' }}>
-          Show or hide providers{hiddenConfigured > 0 ? ` · ${hiddenConfigured} configured hidden` : ''}
+          显示或隐藏提供商{hiddenConfigured > 0 ? ` · ${hiddenConfigured} 个已配置项已隐藏` : ''}
         </summary>
-        <p>Visibility is saved in this browser. Hiding keeps accounts and saved selections.</p>
+        <p>可见性设置保存在此浏览器中。隐藏提供商不会删除账户或已保存的选择。</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
           {Object.entries(PROVIDER_LABELS).map(([id, label]) => (
             <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -31,18 +31,16 @@ export default function ProviderVisibility({ configuredProviders = [], selected 
                 onChange={(e) => setVisible(id, e.target.checked)}
               />
               {label}
-              {configuredProviders.includes(id) ? ' (configured)' : ''}
-              {id === 'deepseek' ? ' · Codex harness' : ''}
+              {configuredProviders.includes(id) ? '（已配置）' : ''}
+              {id === 'deepseek' ? ' · Codex 运行框架' : ''}
             </label>
           ))}
         </div>
       </details>
       {selected && !visible.includes(selected) && (
-        <p>The selected {PROVIDER_LABELS[selected] || selected} provider remains available here while hidden.</p>
+        <p>所选的 {PROVIDER_LABELS[selected] || selected} 提供商虽然已隐藏，但仍可在此处使用。</p>
       )}
-      {persistenceError && (
-        <p role="alert">Visibility changed for this session, but could not be saved in this browser.</p>
-      )}
+      {persistenceError && <p role="alert">本次会话中的可见性已更改，但无法保存到此浏览器。</p>}
     </div>
   );
 }

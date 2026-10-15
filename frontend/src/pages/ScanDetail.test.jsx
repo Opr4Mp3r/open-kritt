@@ -519,7 +519,7 @@ describe('active worker presentation', () => {
       })
     );
 
-    expect(html).toContain('Active workers');
+    expect(html).toContain('活动工作进程');
     expect(html).toContain('Depth 2: 1 active worker');
     expect(html).toContain('Workflow depth 2 worker');
     expect(html).toContain('D2');

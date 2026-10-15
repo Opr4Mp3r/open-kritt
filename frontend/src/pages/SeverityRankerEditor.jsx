@@ -136,13 +136,13 @@ export default function SeverityRankerEditor() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
             <div>
               <Label>
-                RULES <span style={{ textTransform: 'none', letterSpacing: 0 }}>· markdown</span>
+                规则 <span style={{ textTransform: 'none', letterSpacing: 0 }}>· Markdown</span>
               </Label>
               <textarea
                 value={form.content}
                 onChange={(e) => set({ content: e.target.value })}
                 spellCheck={false}
-                placeholder="1. If the finding requires non-trivial privileges, downgrade by 1 rank."
+                placeholder="1. 如果利用该问题需要较高权限，将其严重性下调一级。"
                 className="mono"
                 style={{
                   width: '100%',
@@ -160,7 +160,7 @@ export default function SeverityRankerEditor() {
               />
             </div>
             <div>
-              <Label>PREVIEW</Label>
+              <Label>预览</Label>
               <div
                 style={{
                   border: '1px solid var(--border)',
@@ -173,7 +173,7 @@ export default function SeverityRankerEditor() {
                 {form.content.trim() ? (
                   <Markdown source={form.content} />
                 ) : (
-                  <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Start typing rules to preview them.</div>
+                  <div style={{ color: 'var(--text-3)', fontSize: 13 }}>开始输入规则以查看预览。</div>
                 )}
               </div>
             </div>

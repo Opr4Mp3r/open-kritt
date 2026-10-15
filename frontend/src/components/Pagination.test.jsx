@@ -13,13 +13,13 @@ describe('Pagination', () => {
         startIndex={10}
         endIndex={20}
         setPage={vi.fn()}
-        itemLabel="workflows"
+        itemLabel="工作流"
       />
     );
 
-    expect(html).toContain('11–20 of 27 workflows');
+    expect(html).toContain('共 27 工作流，当前显示 11–20');
     expect(html).toContain('aria-current="page"');
-    expect(html).toContain('aria-label="Next workflows page"');
+    expect(html).toContain('aria-label="下一页工作流"');
   });
 
   it('stays hidden when every item fits on one page', () => {

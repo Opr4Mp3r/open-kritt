@@ -10,13 +10,13 @@ import { useResourceImport } from '../lib/useResourceImport.js';
 
 export default function AgentSkills() {
   const navigate = useNavigate();
-  usePageChrome([{ label: 'Agent skills', active: true }], { label: '+ New skill', to: '/agent-skills/new' }, []);
+  usePageChrome([{ label: '智能体技能', active: true }], { label: '+ 新建技能', to: '/agent-skills/new' }, []);
   const { data, loading, error, reload } = useFetch(() => api.agentSkills(), []);
   const skills = useNewestFirst(data);
   const skillPages = usePagination(skills, { pageSize: 9 });
   const resourceImport = useResourceImport({
     resourceType: 'agentSkill',
-    label: 'Agent skill',
+    label: '智能体技能',
     create: api.createAgentSkill,
     onImported: (skill) => navigate(`/agent-skills/${skill.id}`),
   });
@@ -25,20 +25,20 @@ export default function AgentSkills() {
     <div style={{ padding: '30px 32px', maxWidth: 1180 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>Agent skills</div>
+          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>智能体技能</div>
           <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 3 }}>
-            Selected per scan and installed into each executor agent home.
+            可为每次扫描选择，并安装到各执行智能体的主目录中。
           </div>
         </div>
         <Button variant="ghost" disabled={resourceImport.importing} onClick={resourceImport.chooseFile}>
-          {resourceImport.importing ? 'Importing…' : 'Import JSON'}
+          {resourceImport.importing ? '正在导入…' : '导入 JSON'}
         </Button>
       </div>
       <input
         ref={resourceImport.inputRef}
         type="file"
         accept=".json,application/json"
-        aria-label="Import agent skill JSON"
+        aria-label="导入智能体技能 JSON"
         onChange={resourceImport.importFile}
         style={{ display: 'none' }}
       />
@@ -55,9 +55,9 @@ export default function AgentSkills() {
       {error && <ErrorState error={error} onRetry={reload} />}
       {data && data.length === 0 && (
         <EmptyState
-          title="No agent skills yet"
-          sub="Create reusable security-review instructions and attach them to scans."
-          action={<Button to="/agent-skills/new">+ New skill</Button>}
+          title="还没有智能体技能"
+          sub="创建可复用的安全审查指令，并将其附加到扫描任务。"
+          action={<Button to="/agent-skills/new">+ 新建技能</Button>}
         />
       )}
       {data && data.length > 0 && (
@@ -83,22 +83,22 @@ export default function AgentSkills() {
                   cursor: 'pointer',
                 }}
               >
-                <CardLinkOverlay to={`/agent-skills/${skill.id}`} label={`Open agent skill ${skill.name}`} />
+                <CardLinkOverlay to={`/agent-skills/${skill.id}`} label={`打开智能体技能 ${skill.name}`} />
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                   <div className="mono" style={{ fontWeight: 600, fontSize: 14.5 }}>
                     {skill.name}
                   </div>
                   <Button
                     variant="ghost"
-                    aria-label={`Export ${skill.name}`}
-                    title="Export agent skill as JSON"
+                    aria-label={`导出 ${skill.name}`}
+                    title="将智能体技能导出为 JSON"
                     onClick={(event) => {
                       event.stopPropagation();
                       downloadResourceExport('agentSkill', skill);
                     }}
                     style={{ position: 'relative', zIndex: 2, height: 27, padding: '0 9px', fontSize: 11.5 }}
                   >
-                    Export
+                    导出
                   </Button>
                 </div>
                 <div className="mono" style={{ fontSize: 10.5, color: 'var(--text-3)', marginTop: 4 }}>

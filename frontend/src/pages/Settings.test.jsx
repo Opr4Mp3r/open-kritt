@@ -28,9 +28,9 @@ describe('runtime settings fields', () => {
     );
 
     expect(html).toContain('id="setting-codexFastMode"');
-    expect(html).toContain('higher usage costs');
-    expect(html).toContain('Models without advertised Fast support keep their normal tier.');
-    expect(html).toContain('Default disabled');
+    expect(html).toContain('用量成本可能更高');
+    expect(html).toContain('未声明支持快速模式的模型仍使用常规服务等级。');
+    expect(html).toContain('默认停用');
     expect(html).not.toContain('checked=""');
   });
 
@@ -59,8 +59,8 @@ describe('runtime settings fields', () => {
       />
     );
 
-    expect(html).toContain('Some settings are unavailable from the running backend');
-    expect(html).toContain('Restart the backend to load the current settings schema.');
+    expect(html).toContain('正在运行的后端无法提供部分设置');
+    expect(html).toContain('重启后端以加载当前设置结构。');
     expect(html).toContain('id="setting-workerCount"');
     expect(html).not.toContain('id="setting-ignoreLowStorage"');
   });

@@ -195,7 +195,7 @@ export default function CommandPalette({ open, onClose }) {
               setIndex(0);
             }}
             onKeyDown={onKeyDown}
-            placeholder="Search workflows, scans, post-scripts, skills…"
+            placeholder="搜索工作流、扫描、后处理脚本和技能…"
             style={{
               flex: 1,
               border: 'none',

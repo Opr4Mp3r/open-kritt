@@ -8,20 +8,18 @@ import Pagination from '../components/Pagination.jsx';
 const GRID = '1.8fr 0.6fr 0.7fr 1.4fr 0.9fr';
 
 export default function Steps() {
-  usePageChrome([{ label: 'Steps', active: true }], null, []);
+  usePageChrome([{ label: '步骤', active: true }], null, []);
   const { data, loading, error, reload } = useFetch(() => api.steps(), []);
   const stepPages = usePagination(data || [], { pageSize: 25 });
 
   return (
     <div style={{ padding: '30px 32px', maxWidth: 1180 }}>
-      <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>Steps</div>
-      <div style={{ fontSize: 14, color: 'var(--text-2)', margin: '3px 0 22px' }}>
-        Every step defined across your workflows.
-      </div>
+      <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>步骤</div>
+      <div style={{ fontSize: 14, color: 'var(--text-2)', margin: '3px 0 22px' }}>所有工作流中定义的步骤。</div>
 
       {loading && <Spinner />}
       {error && <ErrorState error={error} onRetry={reload} />}
-      {data && data.length === 0 && <EmptyState title="No steps yet" sub="Steps are created as part of a workflow." />}
+      {data && data.length === 0 && <EmptyState title="还没有步骤" sub="步骤需在工作流中创建。" />}
       {data && data.length > 0 && (
         <div
           style={{
@@ -43,11 +41,11 @@ export default function Steps() {
               borderBottom: '1px solid var(--border-2)',
             }}
           >
-            <span>NAME</span>
-            <span>DEPTH</span>
-            <span>MULTI</span>
-            <span>OUTPUT KEYS</span>
-            <span>WORKFLOW</span>
+            <span>名称</span>
+            <span>深度</span>
+            <span>多输出</span>
+            <span>输出字段</span>
+            <span>工作流</span>
           </div>
           {stepPages.pageItems.map((s) => (
             <div
@@ -61,7 +59,7 @@ export default function Steps() {
                 fontSize: 13,
               }}
             >
-              <span style={{ fontWeight: 500 }}>{s.name || 'Untitled step'}</span>
+              <span style={{ fontWeight: 500 }}>{s.name || '未命名步骤'}</span>
               <span className="mono" style={{ color: 'var(--text-2)' }}>
                 {s.depth}
               </span>

@@ -32,10 +32,10 @@ describe('scan launch choice', () => {
       })
     );
 
-    expect(html).toContain('A scan is already running');
-    expect(html).toContain('Start immediately');
-    expect(html).toContain('Queue');
-    expect(html).toContain('until capacity is available');
+    expect(html).toContain('已有扫描正在运行');
+    expect(html).toContain('立即启动');
+    expect(html).toContain('加入队列');
+    expect(html).toContain('等待容量空闲');
   });
 });
 
@@ -126,10 +126,10 @@ describe('agent skill search', () => {
     );
 
     expect(html).toContain('role="searchbox"');
-    expect(html).toContain('aria-label="Search agent skills"');
+    expect(html).toContain('aria-label="搜索智能体技能"');
     expect(html).toContain('aria-controls="skills-list"');
-    expect(html).toContain('Search by name, slug, description, or license');
-    expect(html).toContain('aria-label="Clear agent skill search"');
+    expect(html).toContain('按名称、slug、说明或许可证搜索');
+    expect(html).toContain('aria-label="清除智能体技能搜索"');
   });
 
   it('hides the clear action for an empty query', () => {
@@ -141,6 +141,6 @@ describe('agent skill search', () => {
       })
     );
 
-    expect(html).not.toContain('Clear agent skill search');
+    expect(html).not.toContain('aria-label="清除智能体技能搜索"');
   });
 });

@@ -158,7 +158,7 @@ export default function AgentSkillEditor() {
             value={form.name}
             onChange={(e) => set({ name: e.target.value, slug: id ? form.slug : slugify(e.target.value) })}
             spellCheck={false}
-            placeholder="skill name"
+            placeholder="技能名称"
             className="mono"
             style={{
               border: 'none',

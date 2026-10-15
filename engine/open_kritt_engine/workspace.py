@@ -1044,30 +1044,30 @@ def workspace_layout(repo_dir: str, manifest: dict[str, Any]) -> str:
     primary = manifest.get("primary") if isinstance(manifest, dict) else {}
     dependencies = manifest.get("dependencies") if isinstance(manifest, dict) else []
     lines = [
-        f"Current working directory / primary repository root: {repo_dir}",
-        "Workspace manifest: WORKSPACE.json",
-        "Dependency repositories are checked out as top-level directories inside the same workspace root.",
-        "When reporting file_path for dependency code, prefix it with the dependency alias directory.",
+        f"当前工作目录／主仓库根目录：{repo_dir}",
+        "工作区清单：WORKSPACE.json",
+        "依赖仓库检出在同一工作区根目录下的顶层目录中。",
+        "报告依赖代码的 file_path 时，应加上依赖别名目录作为前缀。",
         (
-            "Primary repository: "
+            "主仓库："
             f"{primary.get('repo') or '<unknown-repo>'} @ {primary.get('commit') or primary.get('requested_commit') or '<unknown-commit>'}"
         ),
     ]
     if dependencies:
-        lines.append("Dependency checkouts:")
+        lines.append("依赖检出目录：")
         for dep in dependencies:
             lines.append(
                 f"- {dep.get('alias')}/ => {dep.get('repo') or '<unknown-repo>'} "
                 f"@ {dep.get('commit') or dep.get('requested_commit') or '<unknown-commit>'} "
-                f"(workspace path: {dep.get('relative_path') or dep.get('alias')})"
+                f"（工作区路径：{dep.get('relative_path') or dep.get('alias')}）"
             )
     else:
-        lines.append("No dependency checkouts are listed in WORKSPACE.json.")
+        lines.append("WORKSPACE.json 中未列出依赖检出目录。")
     return "\n".join(lines)
 
 
 def workspace_prompt_context(layout: str, manifest_json: str) -> str:
-    return f"Workspace context:\n{layout}\n\nWORKSPACE.json:\n{manifest_json}"
+    return f"工作区上下文：\n{layout}\n\nWORKSPACE.json：\n{manifest_json}"
 
 
 def _scan_dependencies(scan: dict[str, Any]) -> list[dict[str, Any]]:
@@ -1406,13 +1406,13 @@ def _write_workspace_files(repo_dir: str, manifest: dict[str, Any], layout: str,
     root = Path(repo_dir)
     _atomic_write_text(root / "WORKSPACE.json", manifest_json + "\n")
     note = [
-        "# Dependency Workspace",
+        "# 依赖工作区",
         "",
         layout,
         "",
-        "Path guidance:",
-        "- Reference primary repo files relative to the workspace root.",
-        "- Reference dependency files with their dependency directory prefix, e.g. `agave/...`.",
+        "路径说明：",
+        "- 使用相对于工作区根目录的路径引用主仓库文件。",
+        "- 引用依赖文件时，加上依赖目录前缀，例如 `agave/...`。",
     ]
     _atomic_write_text(root / "WORKSPACE.md", "\n".join(note) + "\n")
 
@@ -1879,7 +1879,7 @@ def _yaml_string(value: Any) -> str:
 
 
 def _skill_markdown(skill: dict[str, Any], slug: str) -> str:
-    description = skill.get("description") or f"Open-kritt scan skill: {skill.get('name') or slug}"
+    description = skill.get("description") or f"Open-kritt 扫描技能：{skill.get('name') or slug}"
     lines = [
         "---",
         f"name: {_yaml_string(slug)}",
@@ -1916,12 +1916,12 @@ def _selected_agent_skills_markdown(agent_skills: list[dict[str, Any]]) -> str:
     lines = [
         "---",
         f"name: {_yaml_string(SELECTED_AGENT_SKILLS_SLUG)}",
-        'description: "Apply all Open-Kritt agent skills selected for this scan. Use when the scan prompt invokes the selected native scan skills."',
+        'description: "应用本次扫描选用的全部 Open-Kritt 智能体技能。当扫描提示词调用所选原生扫描技能时使用。"',
         "---",
         "",
-        "# Open-Kritt selected scan skills",
+        "# Open-Kritt 选定扫描技能",
         "",
-        "Apply the selected skills below when they are relevant to the current scan task. They complement the workflow prompt and do not replace the required output schema.",
+        "当下列选定技能与当前扫描任务相关时，应应用这些技能。它们用于补充工作流提示词，不替代规定的输出 schema。",
         "",
     ]
     for skill in agent_skills:
@@ -1945,6 +1945,6 @@ def _selected_agent_skills_markdown(agent_skills: list[dict[str, Any]]) -> str:
             lines.extend(["", str(skill["description"]).strip()])
         content = str(skill.get("content") or "").strip()
         if content:
-            lines.extend(["", "Instructions:", "", content])
+            lines.extend(["", "指令：", "", content])
         lines.append("")
     return "\n".join(lines)

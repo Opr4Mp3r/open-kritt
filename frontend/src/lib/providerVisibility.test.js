@@ -76,10 +76,10 @@ describe('provider presentation preferences', () => {
         selected: 'openrouter',
       })
     );
-    expect(manager).not.toContain('configured hidden');
-    expect(manager).toContain('OpenRouter (configured)');
-    expect(manager).toContain('DeepSeek (configured)');
-    expect(manager).toContain('Show or hide providers');
+    expect(manager).not.toContain('个已配置项已隐藏');
+    expect(manager).toContain('OpenRouter（已配置）');
+    expect(manager).toContain('DeepSeek（已配置）');
+    expect(manager).toContain('显示或隐藏提供商');
   });
 
   it('synchronizes subscribers and other tabs, including clearing storage', () => {

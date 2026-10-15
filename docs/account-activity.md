@@ -1,36 +1,13 @@
-# Active provider accounts
+# 启用模型提供商账户
 
-Use **Accounts → Active** to choose which saved accounts may receive new assignments.
-Existing and newly added accounts default to active. Turning the switch off preserves
-credentials and configuration; turn it on again to reuse the account. Authentication
-and quota status remain visible separately from the saved switch.
+在**账户 → 启用**中选择哪些已保存账户可以接收新任务。现有账户和新添加的账户默认均为启用状态。关闭开关会保留凭据和配置；再次开启后即可继续使用该账户。身份验证和配额状态会单独显示，不受此开关影响。
 
-The setting applies to the registered providers' saved logins and API keys, including
-environment keys. A provider with several accounts uses its active subset. If no active
-credential is available, activate an account in Accounts and retry. Manual actions that
-start model usage also require an active account. Login, credential replacement, status
-refresh, and quota management remain available for inactive accounts.
+此设置适用于已注册提供商的已保存登录和 API 密钥，包括环境变量密钥。提供商拥有多个账户时，只会从已启用的账户中选择。如果没有可用凭据，请在账户页面启用一个账户后重试。会产生模型调用的手动操作也需要启用的账户。非启用账户仍可登录、替换凭据、刷新状态和管理配额。
 
-The engine checks eligibility during account selection and again when a call acquires
-its assignment slot, including after waiting for capacity and before retries. Calls
-admitted before a toggle is saved may finish. A previously selected account that becomes
-inactive before admission fails with an actionable message; it is never silently reused.
+引擎会在选择账户时检查资格，并在调用获取分配槽位时再次检查；等待容量以及重试前也会检查。开关保存前已获准的调用可以继续完成。如果账户在调用获准前被停用，已选中的账户会以可操作的错误信息失败，不会被静默复用。
 
-Preferences are stored in `account-activity.json` beside the provider credential store
-specified by `OPEN_KRITT_PROVIDER_CREDENTIALS_PATH`. The backend writes this file
-atomically and the engine reads it at each assignment boundary. The existing shared
-credential directory supplies the same file to both services; no database migration or
-new mount is required. Missing preferences default to active for compatibility, while
-unreadable or invalid preferences block assignments until repaired. Back up this file
-alongside the credential store. Preferences are associated with a provider and its
-configured credential location, so reconnecting or replacing credentials there keeps
-the saved setting.
+偏好设置存储在提供商凭据目录旁的 `account-activity.json` 文件中，该目录由 `OPEN_KRITT_PROVIDER_CREDENTIALS_PATH` 指定。后端会原子写入此文件，引擎则在每个任务分配边界读取。现有共享凭据目录会将同一文件提供给两个服务，因此不需要数据库迁移或新增挂载。为兼容旧版本，缺少偏好时默认启用；若偏好文件无法读取或内容无效，则会阻止任务分配，直至问题修复。请将此文件与凭据目录一同备份。偏好与提供商及其配置的凭据位置关联，因此在该位置重新连接或替换凭据时会保留已保存设置。
 
-The file has one writer: the application's backend. Deploy the backend and engine
-changes together so both services honor the setting.
+此文件只有一个写入方：应用后端。部署时应同时更新后端和引擎，确保两个服务都遵循此设置。
 
-Account API responses use `active` for the saved preference and `available` for the
-credential health boolean previously exposed as `active`. Update clients that use
-`active` as an authentication-health check. Toggle an observed account with
-`PATCH /api/accounts/:provider/account/:activityId/active` and a boolean `active` in
-the JSON body. Existing login and removal account IDs are unchanged.
+账户 API 响应中的 `active` 表示已保存的偏好，`available` 表示凭据健康状态布尔值；后者此前使用 `active` 字段。请更新将 `active` 用作身份验证健康状态的客户端。通过 `PATCH /api/accounts/:provider/account/:activityId/active` 切换观察到账户的状态，并在 JSON 请求体中传入布尔值 `active`。现有登录和删除操作的账户 ID 保持不变。

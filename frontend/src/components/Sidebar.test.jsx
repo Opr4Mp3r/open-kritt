@@ -6,7 +6,7 @@ describe('sidebar community links', () => {
   it('renders every project and contact destination', () => {
     const html = renderToStaticMarkup(<CommunityLinks />);
 
-    expect(html).toContain('aria-label="Project and community links"');
+    expect(html).toContain('aria-label="项目与社区链接"');
     expect(html).toContain('href="https://github.com/Kritt-ai/open-kritt"');
     expect(html).toContain('href="https://x.com/Kritt_AI"');
     expect(html).toContain('href="https://kritt.ai/"');
@@ -19,7 +19,7 @@ describe('sidebar community links', () => {
   it('renders the persistent community sharing call to action', () => {
     const html = renderToStaticMarkup(<CommunityShareButton onClick={() => {}} />);
 
-    expect(html).toContain('Support open·kritt');
+    expect(html).toContain('支持 open·kritt');
     expect(html).toContain('type="button"');
     expect(html).not.toContain('↗');
   });

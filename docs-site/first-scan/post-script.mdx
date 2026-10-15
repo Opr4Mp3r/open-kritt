@@ -1,31 +1,21 @@
 ---
-title: "Your first post-script"
-description: "Add per-finding follow-up that runs after the workflow."
+title: "创建第一个后处理脚本"
+description: "添加在工作流结束后逐项运行的跟进处理。"
 ---
 
-A **post-script** runs once per finding, after the workflow has produced its findings and
-after de-duplication and ranking. Use it to enrich each finding - grade it, tag it, build
-a proof of concept, or write a report.
+**后处理脚本**会在工作流生成发现项并完成去重和排序后，对每条发现项运行一次。你可以使用它补充发现项信息、评定等级、添加标签、构建概念验证或撰写报告。
 
-<Frame caption="A post-script references finding and scan keys, and declares its own output columns.">
-  <img src="/images/post-scripts.png" alt="open·kritt post-script editor" />
+<Frame caption="后处理脚本可以引用发现项和扫描字段，并声明自身的输出列。">
+  <img src="/images/post-scripts.png" alt="open·kritt 后处理脚本编辑器" />
 </Frame>
 
-## Create one
+## 创建后处理脚本
 
-Open **Post-scripts → New post-script**. You can create a blank post-script or choose
-**Generate with AI**.
+打开**后处理脚本 → 新建后处理脚本**。你可以创建空白脚本，也可以选择**使用 AI 生成**。
 
-To generate a draft, describe the evaluation criteria, desired output fields and types,
-important edge cases, and whether the result should include `_chip_` values, a Markdown
-report, or a proof of concept. Select the provider, model, thinking effort, and harness;
-the engine validates the result and opens it in the normal editor for review. The draft
-is not saved until you click **Create post-script**.
+若要生成草稿，请描述评估标准、所需输出字段及类型、重要边界情况，以及结果是否应包含 `_chip_` 值、Markdown 报告或概念验证。选择提供商、模型、思考强度和运行框架；引擎会先验证结果，再在常规编辑器中打开供你检查。点击**创建后处理脚本**之前，草稿不会保存。
 
-To build one manually, choose **Blank post-script**, give it a name, and write the
-**content** - the prompt the agent runs for each finding. Unlike a workflow step, a
-post-script may only reference the **reserved context and finding keys** shown in the
-editor; it cannot read other steps' outputs.
+若要手动创建，请选择**空白后处理脚本**，填写名称并编写**内容**，即智能体针对每条发现项运行的提示词。与工作流步骤不同，后处理脚本只能引用编辑器中显示的**预留上下文和发现项字段**，不能读取其他步骤的输出。
 
 A simple grading post-script:
 
@@ -36,24 +26,18 @@ Return:
 - severity (string): CRITICAL, HIGH, MEDIUM, or LOW
 ```
 
-## Declare the output
+## 声明输出字段
 
-In **Output format**, add each key the script emits and its type. These keys become
-columns on the finding's `post_script_answer`, so they can't reuse a reserved context or
-finding key.
+在**输出格式**中，添加脚本生成的每个字段及其类型。这些字段会成为发现项 `post_script_answer` 中的列，因此不能与预留的上下文或发现项字段重名。
 
 <Note>
-  The editor shows **Context keys** (scan inputs like `repo_full`, `configuration`) and
-  **Finding keys** (the vulnerability fields like `summary`, `vulnerability_type`,
-  `file_path`). Referenced keys turn green when they resolve.
+  编辑器会显示**上下文字段**（如 `repo_full`、`configuration` 等扫描输入）和**发现项字段**（如 `summary`、`vulnerability_type`、`file_path` 等漏洞字段）。引用有效时会显示为绿色。
 </Note>
 
-When the status line reads **"Post-script is valid,"** click **Create post-script**.
+状态栏显示**“后处理脚本有效”**后，点击**创建后处理脚本**。
 
-You'll attach it to a scan later. Next, add a [severity ranker](/first-scan/ranker).
+之后你可以将它附加到扫描中。接下来，添加[严重性排序规则](/first-scan/ranker)。
 
 <Info>
-  Post-scripts can do much more - validation, reports via `_reserved_report`, PoCs via
-  `_reserved_poc`, and inline **chips**. See the full
-  [Post-scripts](/post-scripts/difference-from-workflow) section.
+  后处理脚本还可完成更多工作，例如验证、通过 `_reserved_report` 生成报告、通过 `_reserved_poc` 生成 PoC，以及显示内嵌**标签**。请参阅完整的[后处理脚本](/post-scripts/difference-from-workflow)章节。
 </Info>

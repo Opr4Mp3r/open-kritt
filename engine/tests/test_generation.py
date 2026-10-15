@@ -223,7 +223,7 @@ def test_generation_rejects_unsafe_output_keys(key):
     with pytest.raises(GenerationValidationError) as exc_info:
         validate_generation_payload("workflow", marked({"results": [workflow]}))
 
-    assert any("valid key name" in item["message"] for item in exc_info.value.errors)
+    assert any("不是有效的键名" in item["message"] for item in exc_info.value.errors)
 
 
 def test_post_script_generation_rejects_unknown_context_reference():
@@ -232,7 +232,7 @@ def test_post_script_generation_rejects_unknown_context_reference():
     with pytest.raises(GenerationValidationError) as exc_info:
         validate_generation_payload("post_script", payload)
 
-    assert any("non-reserved" in item["message"] for item in exc_info.value.errors)
+    assert any("引用了非保留键" in item["message"] for item in exc_info.value.errors)
 
 
 def test_generation_schema_uses_output_field_arrays_not_dynamic_maps():
@@ -256,23 +256,25 @@ def test_generation_prompts_explain_public_workflow_contracts_and_review_guidanc
         "post_script", "Generate finding triage.", generation_response_schema("post_script")
     )
 
-    assert "Sibling steps at one depth share that depth's one output schema" in workflow_prompt
-    assert "`multiOutput: true` means each concrete run may emit zero, one, or many records" in workflow_prompt
-    assert "`{{extra.<key>}}` reference" in workflow_prompt
-    assert "Siblings are static" in workflow_prompt
-    assert "Turn a broad request into sequential stages" in workflow_prompt
-    assert "identify the concrete units requested by the user" in workflow_prompt
-    assert "Every step prompt must be detailed and self-contained" in workflow_prompt
-    assert "objective, available inputs, requested analysis, expected output fields" in workflow_prompt
-    assert "Comments and names can guide navigation, but are not sufficient evidence" in workflow_prompt
-    assert "do not introduce an unrelated research methodology" in workflow_prompt
-    assert "By default, every step at the next depth runs once for each record" in workflow_prompt
-    assert "A no-result stub is a valid outcome" in workflow_prompt
-    assert "Define the in-scope component, deployed or production path" in workflow_prompt
-    assert "Trace untrusted or actor-controlled input" in workflow_prompt
-    assert "A reported vulnerability needs a supported chain" in workflow_prompt
-    assert "This is an example, not a mandatory template" in workflow_prompt
-    assert "derives and validates those requirements from selected post-script prompts" in post_script_prompt
+    assert "同一深度的并列步骤共用该深度的唯一输出 schema" in workflow_prompt
+    assert "`multiOutput: true` 表示每次具体执行可以输出零条、一条或多条记录" in workflow_prompt
+    assert "`{{extra.<key>}}`" in workflow_prompt
+    assert "并列步骤的数量是静态的" in workflow_prompt
+    assert "将宽泛的需求拆成顺序执行的阶段" in workflow_prompt
+    assert "在较早的深度识别用户要求的具体审查单元" in workflow_prompt
+    assert "每个步骤的提示词必须详细、自包含" in workflow_prompt
+    assert "说明目标、可用输入、要求的分析、预期输出字段" in workflow_prompt
+    assert "注释和名称可以帮助定位，但单凭它们不足以构成证据" in workflow_prompt
+    assert "不要引入无关的研究方法" in workflow_prompt
+    assert "默认情况下，下一深度的每个步骤会针对前一深度的每条记录执行一次" in workflow_prompt
+    assert "无结果的 stub 是有效结果" in workflow_prompt
+    assert "先明确范围内的组件、部署或生产路径" in workflow_prompt
+    assert "追踪不可信或参与者可控的输入" in workflow_prompt
+    assert "报告漏洞时，必须有证据链" in workflow_prompt
+    assert "这只是示例，不是强制模板" in workflow_prompt
+    assert "不要用 explicit_panic 这类英文蛇形标识当示例" in workflow_prompt
+    assert "扫描表单会从选中的后处理提示词中推导并校验这些要求" in post_script_prompt
+    assert "不要只在末尾加一句「请用中文」" in post_script_prompt
 
 
 def test_generation_job_rejects_request_larger_than_backend_limit():
@@ -400,7 +402,7 @@ def test_generation_runner_retries_validation_with_feedback_and_no_tools(monkeyp
     assert fake_harness.calls[0]["env"]["CODEX_API_KEY"] == "codex-secret"
     assert fake_harness.calls[0]["env"]["CODEX_HOME"] == "/runtime-codex"
     assert "GITHUB_TOKEN" not in fake_harness.calls[0]["env"]
-    assert "previous JSON draft failed validation" in fake_harness.calls[1]["prompt"]
+    assert "你上一次返回的 JSON 草稿未通过校验" in fake_harness.calls[1]["prompt"]
     assert Path(fake_harness.calls[0]["repo_dir"]).is_dir()
 
 

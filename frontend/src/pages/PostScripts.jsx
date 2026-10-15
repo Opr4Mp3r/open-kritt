@@ -22,17 +22,13 @@ export default function PostScripts() {
   useEffect(() => {
     setDialogOpen(newDialogParam === '1');
   }, [newDialogParam]);
-  usePageChrome(
-    [{ label: 'Post-scripts', active: true }],
-    { label: '+ New post-script', to: '/post-scripts?new=1' },
-    []
-  );
+  usePageChrome([{ label: '后处理脚本', active: true }], { label: '+ 新建后处理脚本', to: '/post-scripts?new=1' }, []);
   const { data, loading, error, reload } = useFetch(() => api.postScripts(), []);
   const postScripts = useNewestFirst(data);
   const postScriptPages = usePagination(postScripts, { pageSize: 9 });
   const resourceImport = useResourceImport({
     resourceType: 'postScript',
-    label: 'Post-script',
+    label: '后处理脚本',
     create: api.createPostScript,
     onImported: (postScript) => navigate(`/post-scripts/${postScript.id}`),
   });
@@ -41,20 +37,20 @@ export default function PostScripts() {
     <div style={{ padding: '30px 32px', maxWidth: 1180 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>Post-scripts</div>
+          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>后处理脚本</div>
           <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 3 }}>
-            Run after every finding to enrich, grade or cluster it. Reserved keys only.
+            在每条发现结果生成后运行，用于补充信息、评级或聚类。仅使用预留键。
           </div>
         </div>
         <Button variant="ghost" disabled={resourceImport.importing} onClick={resourceImport.chooseFile}>
-          {resourceImport.importing ? 'Importing…' : 'Import JSON'}
+          {resourceImport.importing ? '正在导入…' : '导入 JSON'}
         </Button>
       </div>
       <input
         ref={resourceImport.inputRef}
         type="file"
         accept=".json,application/json"
-        aria-label="Import post-script JSON"
+        aria-label="导入后处理脚本 JSON"
         onChange={resourceImport.importFile}
         style={{ display: 'none' }}
       />
@@ -73,9 +69,9 @@ export default function PostScripts() {
       {error && <ErrorState error={error} onRetry={reload} />}
       {data && data.length === 0 && (
         <EmptyState
-          title="No post-scripts yet"
-          sub="A post-script runs once per finding to enrich or grade it."
-          action={<Button to="/post-scripts?new=1">+ New post-script</Button>}
+          title="还没有后处理脚本"
+          sub="后处理脚本会针对每条发现结果运行一次，以补充信息或评级。"
+          action={<Button to="/post-scripts?new=1">+ 新建后处理脚本</Button>}
         />
       )}
       {data && data.length > 0 && (
@@ -101,22 +97,22 @@ export default function PostScripts() {
                   cursor: 'pointer',
                 }}
               >
-                <CardLinkOverlay to={`/post-scripts/${p.id}`} label={`Open post-script ${p.name}`} />
+                <CardLinkOverlay to={`/post-scripts/${p.id}`} label={`打开后处理脚本 ${p.name}`} />
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                   <div className="mono" style={{ fontWeight: 600, fontSize: 14.5 }}>
                     {p.name}
                   </div>
                   <Button
                     variant="ghost"
-                    aria-label={`Export ${p.name}`}
-                    title="Export post-script as JSON"
+                    aria-label={`导出 ${p.name}`}
+                    title="将后处理脚本导出为 JSON"
                     onClick={(event) => {
                       event.stopPropagation();
                       downloadResourceExport('postScript', p);
                     }}
                     style={{ position: 'relative', zIndex: 2, height: 27, padding: '0 9px', fontSize: 11.5 }}
                   >
-                    Export
+                    导出
                   </Button>
                 </div>
                 <div
@@ -215,7 +211,7 @@ function NewPostScriptDialog({ onClose }) {
           </div>
           <button
             type="button"
-            aria-label="Close"
+            aria-label="关闭"
             onClick={onClose}
             style={{
               border: 'none',
@@ -231,15 +227,11 @@ function NewPostScriptDialog({ onClose }) {
         <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OptionCard
             autoFocus
-            title="Generate with AI"
-            sub="Describe how findings should be enriched, then review a detailed, valid post-script draft."
+            title="使用 AI 生成"
+            sub="描述发现结果需要补充的信息，再检查生成的完整有效后处理脚本草稿。"
             to="/post-scripts/generate"
           />
-          <OptionCard
-            title="Blank post-script"
-            sub="Start with an empty post-script and define it yourself."
-            to="/post-scripts/new"
-          />
+          <OptionCard title="空白后处理脚本" sub="从空白后处理脚本开始，自行定义内容。" to="/post-scripts/new" />
         </div>
       </div>
     </div>

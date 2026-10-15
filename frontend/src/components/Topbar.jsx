@@ -64,7 +64,7 @@ export default function Topbar() {
           <button
             className="topbar-search"
             type="button"
-            aria-label="Search"
+            aria-label="搜索"
             onClick={() => setSearchOpen(true)}
             style={{
               display: 'flex',
@@ -90,7 +90,7 @@ export default function Topbar() {
                 display: 'inline-block',
               }}
             />
-            <span className="topbar-search-label">Search</span>
+            <span className="topbar-search-label">搜索</span>
             <span
               className="mono topbar-search-shortcut"
               style={{

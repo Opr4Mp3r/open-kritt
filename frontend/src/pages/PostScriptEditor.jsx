@@ -232,7 +232,7 @@ export default function PostScriptEditor() {
           <input
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="Describe what this post-script adds to a finding…"
+            placeholder="描述此后处理脚本会为发现结果补充什么…"
             style={{
               border: 'none',
               outline: 'none',
@@ -271,7 +271,7 @@ export default function PostScriptEditor() {
           >
             {/* left: prompt */}
             <div>
-              <Label>CONTENT</Label>
+              <Label>内容</Label>
               <PromptEditor
                 ref={editorRef}
                 value={content}
@@ -280,7 +280,7 @@ export default function PostScriptEditor() {
                 allowExtra
                 height={240}
                 expandable
-                title="Post-script content"
+                title="后处理脚本内容"
                 paletteChips={[
                   ...BUILTIN_KEYS.map((k) => ({ label: `${k} · context`, token: k })),
                   ...[...REQUIRED_VULN_KEYS, ...OPTIONAL_VULN_KEYS].map((k) => ({
@@ -295,7 +295,7 @@ export default function PostScriptEditor() {
               <div
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '14px 0 8px' }}
               >
-                <Label inline>REFERENCED KEYS</Label>
+                <Label inline>引用字段</Label>
                 <span
                   className="mono"
                   style={{
@@ -352,7 +352,7 @@ export default function PostScriptEditor() {
               </div>
 
               <Label style={{ margin: '20px 0 8px' }}>
-                CONTEXT KEYS <span style={{ textTransform: 'none', letterSpacing: 0 }}>· scan inputs</span>
+                上下文字段 <span style={{ textTransform: 'none', letterSpacing: 0 }}>· 扫描输入</span>
               </Label>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                 {[...BUILTIN_KEYS, EXTRA_KEY].map((k) => (
@@ -375,7 +375,7 @@ export default function PostScriptEditor() {
                 ))}
               </div>
               <Label style={{ margin: '14px 0 8px' }}>
-                FINDING KEYS <span style={{ textTransform: 'none', letterSpacing: 0 }}>· vulnerability fields</span>
+                发现项字段 <span style={{ textTransform: 'none', letterSpacing: 0 }}>· 漏洞字段</span>
               </Label>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                 {[...REQUIRED_VULN_KEYS, ...OPTIONAL_VULN_KEYS].map((k) => (
@@ -401,7 +401,7 @@ export default function PostScriptEditor() {
 
             {/* right: output schema */}
             <div>
-              <Label style={{ marginBottom: 8 }}>OUTPUT FORMAT</Label>
+              <Label style={{ marginBottom: 8 }}>输出格式</Label>
               <SchemaEditor
                 rows={rows}
                 onRowsChange={setRows}

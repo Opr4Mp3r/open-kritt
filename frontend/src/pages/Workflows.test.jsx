@@ -25,14 +25,14 @@ function renderCard(overrides = {}) {
 
 describe('WorkflowCard deletion action', () => {
   it('offers deletion for an unused custom workflow', () => {
-    expect(renderCard()).toContain('aria-label="Delete Custom review"');
+    expect(renderCard()).toContain('aria-label="删除 Custom review"');
   });
 
   it('does not offer deletion for a workflow with scans', () => {
-    expect(renderCard({ scanCount: 1 })).not.toContain('aria-label="Delete Custom review"');
+    expect(renderCard({ scanCount: 1 })).not.toContain('aria-label="删除 Custom review"');
   });
 
   it('does not offer deletion for a built-in workflow', () => {
-    expect(renderCard({ isDefault: true })).not.toContain('aria-label="Delete Custom review"');
+    expect(renderCard({ isDefault: true })).not.toContain('aria-label="删除 Custom review"');
   });
 });

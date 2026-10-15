@@ -1,48 +1,35 @@
-# open·kritt docs site (Mintlify)
+# open·kritt 文档站（Mintlify）
 
-This folder is a self-contained [Mintlify](https://mintlify.com) docs project. Content is
-Markdown/MDX, so it stays portable if we ever switch tools.
+此目录是一个独立的 [Mintlify](https://mintlify.com) 文档项目。内容使用 Markdown/MDX 编写，便于在未来切换文档工具时继续使用。
 
-## Preview locally
+## 本地预览
 
 ```bash
 cd docs-site
-npm i -g mint      # Mintlify CLI
-npm run dev        # serves at http://localhost:3001
-npm run check-links    # dependency-free internal route and redirect check
-npm run broken-links   # Mintlify's link checker, including redirect destinations
+npm i -g mint      # Mintlify 命令行工具
+npm run dev        # 在 http://localhost:3001 提供文档
+npm run check-links    # 检查内部路由和重定向，不依赖外部工具
+npm run broken-links   # 使用 Mintlify 的链接检查器，包含重定向目标
 ```
 
-The repository's development script pins the docs to port **3001**. A bare `mint dev`
-still uses Mintlify's default port **3000**; use `mint dev --port <n>` for a different
-one-off port.
+仓库开发脚本会将文档站固定在 **3001** 端口。直接运行 `mint dev` 仍会使用 Mintlify 默认的 **3000** 端口；若需临时更换端口，请运行 `mint dev --port <n>`。
 
-Branding lives in `logo/mark-accent.png` (navbar logo, accent `#ff5c3d`) and
-`favicon.svg`; `style.css` enlarges the navbar logo via Mintlify's `nav-logo` hook.
+品牌资源位于 `logo/mark-accent.png`（导航栏图标，强调色 `#ff5c3d`）和 `favicon.svg`；`style.css` 通过 Mintlify 的 `nav-logo` 钩子放大导航栏图标。
 
-## Connect & publish
+## 连接并发布
 
-1. Sign up at [mintlify.com](https://mintlify.com) (the **Starter/free** plan is enough —
-   we don't use the AI assistant).
-2. Install the **Mintlify GitHub app** on `Kritt-ai/open-kritt` and point it at this
-   `docs-site/` directory. It redeploys on every push to `main`.
+1. 在 [mintlify.com](https://mintlify.com) 注册（**Starter/free** 方案即可，项目不使用 AI 助手）。
+2. 在 `Kritt-ai/open-kritt` 上安装 **Mintlify GitHub 应用**，并将其指向 `docs-site/` 目录。每次推送到 `main` 后都会重新部署。
 
-## Custom domain — `docs.kritt.ai`
+## 自定义域名 `docs.kritt.ai`
 
-1. In the Mintlify dashboard → **Settings → Custom domain**, add `docs.kritt.ai`.
-2. In DNS, add a `CNAME` for `docs.kritt.ai` → the target Mintlify gives you
-   (`<your-subdomain>.mintlify.site`).
+1. 在 Mintlify 控制面板中进入 **Settings → Custom domain**，添加 `docs.kritt.ai`。
+2. 在 DNS 中将 `docs.kritt.ai` 的 `CNAME` 指向 Mintlify 提供的目标地址（`<your-subdomain>.mintlify.site`）。
 
-To instead host at **`kritt.ai/docs`** (same domain), enable **"Host at /docs"** in the
-dashboard and add a reverse-proxy rule on your main site (Mintlify has ready-made setups
-for Cloudflare Workers / Vercel / nginx). The plain `/docs` path works on non-Enterprise;
-arbitrary subpaths (e.g. `/help`) are Enterprise-only.
+如果要将文档托管在同一域名的 **`kritt.ai/docs`** 路径下，请在控制面板中启用 **“Host at /docs”**，并在主站配置反向代理规则（Mintlify 为 Cloudflare Workers / Vercel / nginx 提供现成配置）。普通 `/docs` 路径不需要 Enterprise 方案；自定义其他子路径（例如 `/help`）则需要 Enterprise 方案。
 
-## Editing
+## 编辑文档
 
-- Pages live here as `.mdx`; nav + theme are in `docs.json`.
-- Renamed pages must keep a permanent redirect in `docs.json`; CI rejects stale internal
-  links, missing navigation pages, and invalid redirect destinations.
-- Security guidance links to the authoritative repo documents
-  (`docs/threat-model.md`, `SECURITY.md`). If we fully adopt Mintlify, decide on a
-  single source of truth to avoid drift.
+- 页面以 `.mdx` 文件保存在此处；导航和主题配置在 `docs.json` 中。
+- 重命名页面时，必须在 `docs.json` 中保留永久重定向；CI 会检查过期的内部链接、导航缺失的页面和无效的重定向目标。
+- 安全说明链接到仓库中的权威文档（`docs/threat-model.md`、`SECURITY.md`）。如果以后全面采用 Mintlify，应指定唯一事实来源以避免内容不一致。

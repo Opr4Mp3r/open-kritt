@@ -6,6 +6,7 @@ export const DEFAULT_WORKFLOWS = JSON.parse(
   fs.readFileSync(new URL('./defaultWorkflowSeeds.json', import.meta.url), 'utf8')
 );
 
+// 名称用于识别已持久化的内置模板；保留名称，避免中文化后重复安装。
 export const DEFAULT_WORKFLOW_NAMES = DEFAULT_WORKFLOWS.map((workflow) => workflow.name);
 
 export function isDefaultWorkflowName(name) {

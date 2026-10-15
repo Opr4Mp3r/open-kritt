@@ -13,7 +13,7 @@ const ago = (ms) => new Date(Date.now() - ms);
 const WORKFLOWS = [
   {
     name: 'deep-taint-v3',
-    description: 'Source-to-sink taint analysis with a final exploitability-confirmation pass.',
+    description: '从输入源到危险操作的污点分析，并在最后确认可利用性。',
     levels: [
       {
         depth: 0,
@@ -21,9 +21,9 @@ const WORKFLOWS = [
         outputFormat: { entrypoints: 'array', framework: 'string', attack_surface: 'string' },
         steps: [
           {
-            name: 'Map external entrypoints',
+            name: '梳理外部入口',
             content:
-              'You are analyzing {{repo_full}} at commit {{commit_sha}}.\nScope: {{repo_scope}}. Dependencies: {{dependencies}}.\n\nList every externally reachable entrypoint (HTTP routes, CLI commands, queue consumers). For each, capture the framework in use and the attack surface it exposes.',
+              '你正在分析 {{repo_full}} 的提交 {{commit_sha}}。\n范围：{{repo_scope}}。依赖：{{dependencies}}。\n\n列出所有可从外部触达的入口（HTTP 路由、CLI 命令、队列消费者）。逐一记录所用框架及其暴露的攻击面。给人读的说明用简体中文写完整句子，不要写英文段落。路径、代码符号和输出字段名保持原样。',
           },
         ],
       },
@@ -33,14 +33,14 @@ const WORKFLOWS = [
         outputFormat: { sink: 'string', source: 'string', flow_path: 'array', confidence: 'number' },
         steps: [
           {
-            name: 'Trace taint — server',
+            name: '追踪污点流——服务端',
             content:
-              'Given entrypoints {{entrypoints}} on {{framework}}, trace each tainted {{attack_surface}} from source to a dangerous sink. Emit one record per distinct flow.',
+              '以 {{framework}} 上的入口 {{entrypoints}} 为起点，在攻击面 {{attack_surface}} 中，将每条受污染的数据流从输入源追踪至危险操作。每条不同的数据流输出一条记录。给人读的说明用简体中文写完整句子，不要写英文段落。路径、代码符号和输出字段名保持原样。',
           },
           {
-            name: 'Trace taint — client',
+            name: '追踪污点流——客户端',
             content:
-              'Inspect client-rendered paths reachable from {{entrypoints}}. Trace DOM and eval sinks back to their source. Emit one record per distinct flow.',
+              '检查从 {{entrypoints}} 可达的客户端渲染路径。从 DOM 和 eval 危险操作反向追踪数据来源。每条不同的数据流输出一条记录。给人读的说明用简体中文写完整句子，不要写英文段落。路径、代码符号和输出字段名保持原样。',
           },
         ],
       },
@@ -60,9 +60,9 @@ const WORKFLOWS = [
         },
         steps: [
           {
-            name: 'Confirm exploitability',
+            name: '确认可利用性',
             content:
-              'For each flow ({{sink}} ← {{source}} via {{flow_path}}, confidence {{confidence}}) decide whether it is truly exploitable in {{repo_full}}. Build a concrete payload and describe who could trigger it.',
+              '逐一判断以下数据流在 {{repo_full}} 中是否确实可被利用：{{sink}} ← {{source}}，路径为 {{flow_path}}，置信度为 {{confidence}}。构造具体的攻击输入，并说明什么角色可以触发它。给人读的说明用简体中文写完整句子，不要写英文段落。攻击载荷、路径、代码符号和输出字段名保持原样。',
           },
         ],
       },
@@ -70,14 +70,18 @@ const WORKFLOWS = [
   },
   {
     name: 'authz-sweep',
-    description: 'Maps roles to resources, then probes for missing authorization checks.',
+    description: '梳理角色与资源的对应关系，再检查是否缺少授权校验。',
     levels: [
       {
         depth: 0,
         multiOutput: false,
         outputFormat: { roles: 'array', resources: 'array' },
         steps: [
-          { name: 'Map roles & resources', content: 'Enumerate roles and protected resources in {{repo_full}}.' },
+          {
+            name: '梳理角色与资源',
+            content:
+              '枚举 {{repo_full}} 中的角色与受保护资源。给人读的说明用简体中文写完整句子，不要写英文段落。代码符号保持原样。',
+          },
         ],
       },
       {
@@ -86,8 +90,9 @@ const WORKFLOWS = [
         outputFormat: { handler: 'string', missing_role: 'string', evidence: 'string' },
         steps: [
           {
-            name: 'Find missing checks',
-            content: 'For each resource in {{resources}}, find handlers lacking a check for {{roles}}.',
+            name: '查找缺失的授权校验',
+            content:
+              '逐一检查 {{resources}} 中的资源，找出缺少对 {{roles}} 进行授权校验的处理函数。给人读的说明用简体中文写完整句子，不要写英文段落。代码符号保持原样。',
           },
         ],
       },
@@ -105,19 +110,31 @@ const WORKFLOWS = [
           malicious_actor: 'string',
           exploitable: 'boolean',
         },
-        steps: [{ name: 'Confirm', content: 'Confirm exploitability of {{handler}} bypassing {{missing_role}}.' }],
+        steps: [
+          {
+            name: '确认可利用性',
+            content:
+              '确认 {{handler}} 绕过 {{missing_role}} 角色校验是否可被利用。给人读的说明用简体中文写完整句子，不要写英文段落。代码符号保持原样。',
+          },
+        ],
       },
     ],
   },
   {
     name: 'memory-safety',
-    description: 'Native-code buffer & lifetime analysis for C/C++/Rust-unsafe.',
+    description: '分析 C/C++ 及 Rust unsafe 原生代码中的缓冲区和对象生命周期。',
     levels: [
       {
         depth: 0,
         multiOutput: false,
         outputFormat: { surfaces: 'array' },
-        steps: [{ name: 'Locate native surfaces', content: 'Find FFI and unsafe blocks in {{repo_full}}.' }],
+        steps: [
+          {
+            name: '定位原生代码攻击面',
+            content:
+              '查找 {{repo_full}} 中的 FFI 与 unsafe 代码块。给人读的说明用简体中文写完整句子，不要写英文段落。代码符号保持原样。',
+          },
+        ],
       },
       {
         depth: 1,
@@ -134,14 +151,18 @@ const WORKFLOWS = [
           exploitable: 'boolean',
         },
         steps: [
-          { name: 'Confirm memory bug', content: 'For each of {{surfaces}}, confirm a memory-safety violation.' },
+          {
+            name: '确认内存安全缺陷',
+            content:
+              '逐一检查 {{surfaces}}，确认是否存在内存安全违规。给人读的说明用简体中文写完整句子，不要写英文段落。代码符号保持原样。',
+          },
         ],
       },
     ],
   },
   {
     name: 'secrets-scan',
-    description: 'Single-pass scan for committed credentials and weak crypto.',
+    description: '单轮扫描已提交到代码库的凭据和不安全的加密实现。',
     levels: [
       {
         depth: 0,
@@ -157,7 +178,13 @@ const WORKFLOWS = [
           malicious_actor: 'string',
           exploitable: 'boolean',
         },
-        steps: [{ name: 'Scan for secrets', content: 'Scan {{repo_full}} for committed secrets and weak crypto.' }],
+        steps: [
+          {
+            name: '扫描泄露凭据与加密缺陷',
+            content:
+              '扫描 {{repo_full}}，查找已提交的秘密信息和不安全的加密实现。给人读的说明用简体中文写完整句子，不要写英文段落。代码符号保持原样。',
+          },
+        ],
       },
     ],
   },
@@ -166,23 +193,23 @@ const WORKFLOWS = [
 const POST_SCRIPTS = [
   {
     name: 'cvss-grader',
-    description: 'Scores each finding with a CVSS vector, maps to a CWE and assigns a confidence band.',
+    description: '为每条发现给出 CVSS 评分向量、对应的 CWE 和置信度等级。',
     content:
-      'Grade the finding "{{summary}}" — a {{vulnerability_type}} at {{file_path}}:{{line}}.\n\nUsing the {{explanation}} and {{malicious_input_example}}, assign a CVSS v3.1 vector, derive the severity band, and pick the single most specific CWE. Weigh whether {{exploitable}} is confirmed.',
+      '为发现“{{summary}}”评级：漏洞类型为 {{vulnerability_type}}，位置为 {{file_path}}:{{line}}。\n\n根据 {{explanation}} 和 {{malicious_input_example}} 给出 CVSS v3.1 向量，推导严重性等级，并选出一个最具体的 CWE。评估 {{exploitable}} 是否已有证据确认。评级说明用简体中文，不要写英文段落。CVSS 向量、CWE 编号、严重性枚举和输出字段名保持原样。',
     outputFormat: { severity: 'string', cvss_vector: 'string', cwe: 'string' },
   },
   {
     name: 'patch-suggester',
-    description: 'Drafts a minimal remediation and a unified-diff patch for the affected file.',
+    description: '为受影响文件起草最小修复建议和 unified diff 格式补丁。',
     content:
-      'For "{{summary}}" in {{file_path}}, walk the {{trigger_flow}} and draft the smallest safe fix. Produce a human remediation note and a unified-diff patch that closes the {{vulnerability_type}}.',
+      '针对 {{file_path}} 中的“{{summary}}”，沿 {{trigger_flow}} 检查并起草最小且安全的修复方案。输出面向读者的修复说明，以及消除 {{vulnerability_type}} 的 unified diff 格式补丁。修复说明用简体中文，不要写英文段落。unified diff、路径、代码符号和输出字段名保持原样。',
     outputFormat: { remediation: 'string', patch_diff: 'string' },
   },
   {
     name: 'dedupe-cluster',
-    description: 'Clusters duplicate findings across sibling steps into a single canonical report.',
+    description: '将同层步骤中的重复发现聚为一组，归并为一份主报告。',
     content:
-      'Compare "{{summary}}" at {{file_path}} against prior findings of the same {{vulnerability_type}}. Assign a stable cluster id and mark whether this record is the canonical representative.',
+      '将 {{file_path}} 中的“{{summary}}”与此前同属 {{vulnerability_type}} 的发现进行比较。分配稳定的分组标识，并标明此记录是否为该组的主记录。分组说明用简体中文，不要写英文段落。分组标识和输出字段名保持原样。',
     outputFormat: { cluster_id: 'string', is_canonical: 'boolean' },
   },
 ];

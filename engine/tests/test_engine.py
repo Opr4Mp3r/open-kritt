@@ -313,8 +313,8 @@ def test_anchored_dedupe_batches_carry_canonicals_and_next_50():
     assert [row["id"] for row in anchors] == [1]
     assert [row["id"] for row in targets] == list(range(2, 52))
     prompt = build_dedupe_prompt(scan(), anchors, targets)
-    assert "Canonical anchors JSON" in prompt
-    assert "Target findings JSON" in prompt
+    assert "规范锚点 JSON" in prompt
+    assert "目标发现 JSON" in prompt
 
 
 def test_dedupe_validation_requires_every_target_once_and_maps_anchors():
@@ -413,17 +413,18 @@ def test_ranker_prompt_applies_the_scan_severity_ranker_before_protocol_constrai
     prompt = build_ranker_prompt(configured_scan, [], [vuln(3, canonical=True, canonical_id=3)])
 
     assert configured_rules in prompt
-    assert "Treat the configured severity ranking rules below as authoritative" in prompt
-    assert prompt.index(configured_rules) < prompt.index("Required ranking protocol:")
-    assert "Return every target id exactly once" in prompt
-    assert "Return only minified JSON matching the provided schema" in prompt
+    assert "将下方配置的严重性评级规则视为判断优先级、影响级别和赏金的权威依据。" in prompt
+    assert prompt.index(configured_rules) < prompt.index("必须遵循的排序协议：")
+    assert "每个目标 id 必须且只能返回一次" in prompt
+    assert "只返回符合所给 schema 的紧凑 JSON" in prompt
+    assert "不要写成英文" in prompt
 
 
 def test_ranker_prompt_keeps_a_safe_fallback_for_legacy_scans_without_rules():
     prompt = build_ranker_prompt(scan(), [], [vuln(3, canonical=True, canonical_id=3)])
 
-    assert "No additional scan-specific ranking rules were configured." in prompt
-    assert "Target findings JSON" in prompt
+    assert "本次扫描未配置额外的专用评级规则。" in prompt
+    assert "目标发现 JSON" in prompt
 
 
 def test_ranker_batch_sends_the_configured_severity_rules_to_the_harness():
@@ -539,10 +540,10 @@ def test_repeat_append_prompt_requires_only_new_results_after_the_first_run():
 
     prompt = repeat_append_prompt(2, [{"repeat_run": 1, "result": {"thing": "existing"}}])
 
-    assert "This is repeat run 2" in prompt
+    assert "这是第 2 次重复执行" in prompt
     assert '"thing": "existing"' in prompt
-    assert "return only genuinely new application records" in prompt
-    assert "appended" in prompt and "earlier set automatically" in prompt
+    assert "只返回此前结果尚未涵盖的全新业务记录" in prompt
+    assert "新记录会自动追加到此前的结果集中" in prompt
 
 
 def test_agent_skills_prompt_includes_skill_metadata_and_content():
@@ -560,7 +561,7 @@ def test_agent_skills_prompt_includes_skill_metadata_and_content():
         ]
     )
 
-    assert "Selected agent skills" in prompt
+    assert "本次扫描选用的智能体技能" in prompt
     assert "## Audit skill" in prompt
     assert "source: https://example.com/skill" in prompt
     assert "Trace attacker input to sinks." in prompt
@@ -635,8 +636,8 @@ def test_prepare_dependency_workspace_writes_manifest_and_layout(monkeypatch, tm
     assert manifest["primary"]["repo"] == "owner/repo"
     assert manifest["dependencies"][0]["alias"] == "agave"
     assert (Path(prepared.repo_dir) / "agave" / ".git").is_dir()
-    assert "Dependency repositories are checked out as top-level directories" in prepared.layout
-    assert "WORKSPACE.json:" in workspace_prompt_context(prepared.layout, prepared.manifest_json)
+    assert "依赖仓库检出在同一工作区根目录下的顶层目录中。" in prepared.layout
+    assert "WORKSPACE.json：" in workspace_prompt_context(prepared.layout, prepared.manifest_json)
     skill_file = Path(prepared.workspace.env["CODEX_HOME"]) / "skills" / "audit-skill" / "SKILL.md"
     assert skill_file.exists()
     skill_text = skill_file.read_text(encoding="utf-8")
@@ -912,7 +913,7 @@ def test_claude_workspaces_are_writable_per_job_copies(monkeypatch, tmp_path):
     assert manifest["primary"]["path"] == "/workspace"
     assert manifest["dependencies"][0]["path"] == "/workspace/agave"
     assert workspace_context(prepared)["workspace_root"] == "/workspace"
-    assert "Current working directory / primary repository root: /workspace" in prepared.layout
+    assert "当前工作目录／主仓库根目录：/workspace" in prepared.layout
     assert prepared.repo_dir not in prepared.manifest_json
     assert prepared.repo_dir not in (Path(prepared.repo_dir) / "WORKSPACE.json").read_text(encoding="utf-8")
 
@@ -1035,15 +1036,17 @@ def test_harness_prompt_explains_stub_contract():
     prompt = harness_prompt(
         "Find things", multi_output=True, schema=output_schema('{"thing":"string"}', multi_output=True)
     )
-    assert "`stub` set to true" in prompt
+    assert "将 `stub` 设为 true" in prompt
     assert "`stub_explanation`" in prompt
-    assert "`results` set to an empty array" in prompt
-    assert "valid successful" in prompt
-    assert "does not establish an actual bug" in prompt
-    assert "`stub: false` with an empty `results` array" in prompt
-    assert "fails the attempt" in prompt
-    assert "multi-output step" in prompt
-    assert "The exact JSON Schema" in prompt
+    assert "将 `results` 设为空数组" in prompt
+    assert "有效的成功结果" in prompt
+    assert "无法证明实际缺陷" in prompt
+    assert "`stub: false` 与空的 `results` 数组" in prompt
+    assert "会导致此次尝试失败" in prompt
+    assert "多输出步骤" in prompt
+    assert "确切的 JSON Schema" in prompt
+    assert "不要写成英文" in prompt
+    assert "原文证据必须保留原样" not in prompt
     assert EXTRACTOR_HELPER_FIELD in prompt
     assert '"thing"' in prompt
 
@@ -1344,10 +1347,10 @@ def test_codex_harness_resumes_corrupted_session_for_json(monkeypatch, tmp_path)
     assert 'model_provider="openrouter"' in calls[1]
     assert 'model_reasoning_effort="medium"' in calls[1]
     assert EXTRACTOR_HELPER_FIELD in prompts[1]
-    assert "The exact JSON Schema" in prompts[1]
-    assert "does not establish an actual bug" in prompts[1]
-    assert "`stub: false` with an empty `results`" in prompts[1]
-    assert "Do not include markdown fences" in prompts[1]
+    assert "必须严格满足的 JSON Schema" in prompts[1]
+    assert "无法证明实际缺陷" in prompts[1]
+    assert "`stub: false` 与空的 `results`" in prompts[1]
+    assert "不要在 JSON 对象之外包含 Markdown" in prompts[1]
 
 
 def test_claude_harness_uses_dangerous_permissions_and_default_tools(monkeypatch, tmp_path):
@@ -2915,9 +2918,9 @@ def test_worker_retries_strict_validation_then_writes_results(monkeypatch, tmp_p
     assert fake_db.metadata[0]["prompt_filled"] == fake_harness.calls[0]["prompt"]
     assert fake_db.metadata[1]["prompt_filled"] == fake_harness.calls[0]["prompt"]
     assert "`stub_explanation`" in fake_db.metadata[0]["prompt_filled"]
-    assert "The exact JSON Schema" in fake_db.metadata[0]["prompt_filled"]
-    assert "Workspace context:" in fake_harness.calls[0]["prompt"]
-    assert "This is repeat run 2" in fake_harness.calls[0]["prompt"]
+    assert "确切的 JSON Schema" in fake_db.metadata[0]["prompt_filled"]
+    assert "工作区上下文：" in fake_harness.calls[0]["prompt"]
+    assert "这是第 2 次重复执行" in fake_harness.calls[0]["prompt"]
     assert '"thing": "existing"' in fake_harness.calls[0]["prompt"]
     assert fake_db.prior_repeat_requests == [
         {"scan_id": 7, "step_id": 1, "prev_id": 0, "prev_table": None, "repeat_run": 2}
@@ -3283,7 +3286,7 @@ def test_post_processing_harness_uses_dependency_workspace(monkeypatch, tmp_path
     assert fake_harness.calls[0]["thinking_effort"] == "xhigh"
     assert workspace_arguments["harness_name"] == "codex"
     assert workspace_arguments["model_provider"] == "codex"
-    assert "Workspace context:" in fake_harness.calls[0]["prompt"]
+    assert "工作区上下文：" in fake_harness.calls[0]["prompt"]
     assert fake_db.updates[0]["prompt_filled"] == fake_harness.calls[0]["prompt"]
     assert not root.exists()
 

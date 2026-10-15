@@ -1,20 +1,17 @@
 ---
-title: "Your first ranker"
-description: "Teach the model how to prioritize findings for your program."
+title: "创建第一个排序规则"
+description: "指导模型按照你的计划确定发现项的优先级。"
 ---
 
-A **severity ranker** is a set of plain-Markdown rules the model applies when ordering
-findings by priority. Rankers turn raw findings into a triaged list that matches how *you*
-think about severity.
+**严重性排序规则**是一组纯 Markdown 规则，模型会在排列发现项优先级时应用这些规则。排序规则可以将原始发现项整理为符合*你的*严重性判断方式的分诊列表。
 
-<Frame caption="A ranker is free-form Markdown rules with a live preview.">
-  <img src="/images/severity-ranker.png" alt="open·kritt severity ranker editor" />
+<Frame caption="排序规则采用自由格式的 Markdown，并提供实时预览。">
+  <img src="/images/severity-ranker.png" alt="open·kritt 严重性排序规则编辑器" />
 </Frame>
 
-## Create one
+## 创建排序规则
 
-Open **Severity rankers → New severity ranker**, name it, and write your rules as a
-numbered or bulleted Markdown list. There's no schema - just clear instructions:
+打开**严重性排序规则 → 新建严重性排序规则**，填写名称，并使用编号或项目符号列表编写 Markdown 规则。这里没有固定结构，只需写清楚要求：
 
 ```markdown
 # Ranking rules
@@ -25,14 +22,10 @@ numbered or bulleted Markdown list. There's no schema - just clear instructions:
 4. Deprioritize anything that needs local access or non-default configuration.
 ```
 
-The editor shows a live **preview** of your rendered Markdown. When the status line reads
-**"Severity ranker is valid,"** click **Create severity ranker**.
+编辑器会实时**预览**渲染后的 Markdown。状态栏显示**“严重性排序规则有效”**后，点击**创建严重性排序规则**。
 
 <Note>
-  You can select several rankers on a single scan - their rules are concatenated - and add
-  scan-specific rules on top. See
-  [How to create a ranker](/severity-ranker/how-to-create) for the details.
+  一次扫描可以选择多个排序规则，规则会按顺序合并；你还可以添加扫描专属规则。详情请参阅[如何创建排序规则](/severity-ranker/how-to-create)。
 </Note>
 
-You now have the three ingredients: a workflow, a post-script, and a ranker. Time to
-[run the scan](/first-scan/run-the-scan).
+现在你已准备好三项内容：工作流、后处理脚本和排序规则。接下来[运行扫描](/first-scan/run-the-scan)。

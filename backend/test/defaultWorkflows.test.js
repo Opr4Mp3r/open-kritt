@@ -33,10 +33,15 @@ test('ships the external-flow-analysis workflow', () => {
   );
   assert.deepEqual(
     workflow.levels.map((level) => level.steps.map((step) => step.name)),
-    [['Map external entrypoints'], ['Trace reachable flows'], ['Investigate flow vulnerabilities']]
+    [['梳理外部入口'], ['跟踪可达执行路径'], ['调查路径中的漏洞']]
   );
   assert.ok(workflow.levels.every((level) => level.multiOutput && !level.consumeAll));
   assert.equal(workflow.levels.at(-1).outputFormat.trigger_flow, 'array');
+  const prompts = workflow.levels.flatMap((level) => level.steps.map((step) => step.content)).join('\n');
+  assert.equal(prompts.includes('path:line symbol - behavior'), false);
+  assert.equal(prompts.includes('例如 explicit_panic'), false);
+  assert.equal(prompts.includes('给人读的说明用简体中文写完整句子'), true);
+  assert.equal(prompts.includes('{{repo_full}}'), true);
 });
 
 test('ships the Cosmos ABCI panic review workflow', () => {
@@ -48,18 +53,14 @@ test('ships the Cosmos ABCI panic review workflow', () => {
   );
   assert.deepEqual(
     workflow.levels.map((level) => level.steps.map((step) => step.name)),
-    [
-      ['Enumerate ABCI methods'],
-      [
-        'Investigate explicit panic calls',
-        'Investigate arithmetic panics',
-        'Investigate nil pointer panics',
-        'Investigate bounds and type panics',
-      ],
-    ]
+    [['枚举 ABCI 方法'], ['调查显式 panic 调用', '调查算术 panic', '调查 nil 指针 panic', '调查越界与类型 panic']]
   );
   assert.ok(workflow.levels.every((level) => level.multiOutput && !level.consumeAll));
   assert.equal(workflow.levels[0].outputFormat.abci_method_name, 'string');
   assert.equal(workflow.levels[1].outputTable, 'workflows.vulnerabilities');
   assert.equal(workflow.levels[1].outputFormat.trigger_flow, 'array');
+  const prompts = workflow.levels.flatMap((level) => level.steps.map((step) => step.content)).join('\n');
+  assert.equal(prompts.includes('例如 explicit_panic'), false);
+  assert.equal(prompts.includes('例如「显式 panic」'), true);
+  assert.equal(prompts.includes('BeginBlock'), true);
 });

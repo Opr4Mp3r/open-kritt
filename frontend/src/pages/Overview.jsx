@@ -4,10 +4,10 @@ import { useFetch } from '../lib/useFetch.js';
 import { usePageChrome } from '../context/ui.jsx';
 import { Spinner, ErrorState, StatusBadge } from '../components/ui.jsx';
 
-const todayLabel = () => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+const todayLabel = () => new Date().toLocaleDateString('zh-CN', { weekday: 'long', month: 'long', day: 'numeric' });
 
 export default function Overview() {
-  usePageChrome([{ label: 'Overview', active: true }], null, []);
+  usePageChrome([{ label: '概览', active: true }], null, []);
   const { data, loading, error, reload } = useFetch(() => api.overview(), []);
 
   return (
@@ -15,26 +15,26 @@ export default function Overview() {
       <div className="mono" style={{ fontSize: 13, color: 'var(--text-2)' }}>
         {todayLabel()}
       </div>
-      <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em', margin: '4px 0 24px' }}>Overview</div>
+      <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em', margin: '4px 0 24px' }}>概览</div>
 
       {loading && <Spinner />}
       {error && <ErrorState error={error} onRetry={reload} />}
       {data && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 26 }}>
-            <Kpi label="Workflows" value={data.workflowCount} sub="blueprints defined" />
-            <Kpi label="Scans" value={data.scanCount} sub={`${data.runningCount} running now`} />
-            <Kpi label="Findings" value={data.findingsCount} sub="across all scans" color="var(--accent)" />
-            <Kpi label="Exploitable" value={data.exploitableCount} sub="confirmed by final pass" color="var(--fail)" />
+            <Kpi label="工作流" value={data.workflowCount} sub="已定义的扫描方案" />
+            <Kpi label="扫描" value={data.scanCount} sub={`${data.runningCount} 个正在运行`} />
+            <Kpi label="发现结果" value={data.findingsCount} sub="所有扫描的汇总" color="var(--accent)" />
+            <Kpi label="可利用" value={data.exploitableCount} sub="经最终验证确认" color="var(--fail)" />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ fontSize: 15, fontWeight: 600 }}>Active &amp; recent scans</div>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>进行中与最近的扫描</div>
             <Link
               to="/scans"
               style={{ fontSize: 12.5, color: 'var(--accent)', cursor: 'pointer', textDecoration: 'none' }}
             >
-              View all →
+              查看全部 →
             </Link>
           </div>
           <div
@@ -65,7 +65,7 @@ export default function Overview() {
                   <div className="mono" style={{ fontSize: 11.5, color: 'var(--text-3)', marginTop: 2 }}>
                     {s.workflowName} · {s.model}
                     {Object.keys(s.modelOverrides || {}).length
-                      ? ` · ${Object.keys(s.modelOverrides).length} depth overrides`
+                      ? ` · ${Object.keys(s.modelOverrides).length} 个深度覆盖设置`
                       : ''}
                   </div>
                 </div>
@@ -73,9 +73,7 @@ export default function Overview() {
               </Link>
             ))}
             {data.recentScans.length === 0 && (
-              <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
-                No scans yet.
-              </div>
+              <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>暂无扫描。</div>
             )}
           </div>
         </>

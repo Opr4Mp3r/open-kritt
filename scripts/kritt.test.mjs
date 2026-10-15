@@ -435,7 +435,7 @@ test('setup explains the optional GitHub token', async (t) => {
     prompter: answers({ ask: ['9', '3', '10'] }),
   });
 
-  assert.match(io.output.text, /private GitHub repositories/);
+  assert.match(io.output.text, /私有 GitHub 代码库/);
 });
 
 test('an existing Codex auth file is copied into the configured project home', async (t) => {
@@ -839,7 +839,7 @@ test('Docker preflight explains a missing docker executable', async (t) => {
     ['docker_missing']
   );
   assert.match(preflight.issues[0].message, /Docker could not be started/);
-  assert.match(preflight.issues[0].message, /Install Docker Desktop/);
+  assert.match(preflight.issues[0].message, /请安装 Docker Desktop/);
 });
 
 test('start stops before Compose when the Docker daemon is unreachable', async (t) => {

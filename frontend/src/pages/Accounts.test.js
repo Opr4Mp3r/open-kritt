@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
@@ -27,7 +27,7 @@ describe('expired Codex login', () => {
     const html = renderToStaticMarkup(createElement(CodexSignInRequired));
 
     expect(html).toContain('role="alert"');
-    expect(html).toContain('Sign in to Codex again');
+    expect(html).toContain('请重新登录 Codex');
     expect(html).toContain('saved token was rejected');
     expect(html).toContain('Quota usage is hidden');
   });
@@ -263,7 +263,7 @@ describe('Codex weekly usage', () => {
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain('Waiting for Codex, then refreshing quota');
     expect(html).toContain('account-weekly-spinner');
-    expect(html).toContain('Manual resets');
+    expect(html).toContain('手动重置');
     expect(html).toContain('3 available');
   });
 
@@ -296,26 +296,37 @@ describe('Codex weekly usage', () => {
     expect(html).toContain('No current usage window is eligible');
   });
 
-  it('shows the expiry date for each available manual reset', () => {
-    const html = renderToStaticMarkup(
-      createElement(CodexWeeklyUsage, {
-        usage: {
-          notStarted: false,
-          resetRemaining: '2d remaining',
-          manualResetsAvailable: 2,
-          manualResetsApplicable: 1,
-          manualResetCredits: [
-            { title: 'Full reset', expiresAt: '2026-08-12T18:07:27Z' },
-            { title: 'Full reset', expiresAt: '2026-08-13T18:07:27Z' },
-          ],
-        },
-        onReset: () => {},
-      })
-    );
+  it.each([
+    ['UTC', 'Aug 12, 2026', 'Aug 13, 2026'],
+    ['Asia/Shanghai', 'Aug 13, 2026', 'Aug 14, 2026'],
+  ])('shows each manual reset expiry date in %s', (timeZone, firstExpiry, secondExpiry) => {
+    const DateTimeFormat = Intl.DateTimeFormat;
+    const formatter = vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (locale, options) {
+      return new DateTimeFormat(locale ?? 'en-US', { timeZone, ...options });
+    });
+    try {
+      const html = renderToStaticMarkup(
+        createElement(CodexWeeklyUsage, {
+          usage: {
+            notStarted: false,
+            resetRemaining: '2d remaining',
+            manualResetsAvailable: 2,
+            manualResetsApplicable: 1,
+            manualResetCredits: [
+              { title: 'Full reset', expiresAt: '2026-08-12T18:07:27Z' },
+              { title: 'Full reset', expiresAt: '2026-08-13T18:07:27Z' },
+            ],
+          },
+          onReset: () => {},
+        })
+      );
 
-    expect(html).toContain('Full reset · Expires Aug 12, 2026');
-    expect(html).toContain('Full reset · Expires Aug 13, 2026');
-    expect(formatResetExpiryDate('2026-08-12T18:07:27Z', 'en-US')).toBe('Aug 12, 2026');
+      expect(html).toContain(`Full reset · Expires ${firstExpiry}`);
+      expect(html).toContain(`Full reset · Expires ${secondExpiry}`);
+      expect(formatResetExpiryDate('2026-08-12T18:07:27Z', 'en-US')).toBe(firstExpiry);
+    } finally {
+      formatter.mockRestore();
+    }
   });
 
   it('retries at most three times while the refreshed timestamp still shows an untouched window', async () => {
@@ -418,7 +429,7 @@ describe('xAI login provider', () => {
       })
     ).toBe('expired');
     const html = renderToStaticMarkup(createElement(ProviderSignInRequired, { providerId: 'xai' }));
-    expect(html).toContain('Sign in to xAI again');
+    expect(html).toContain('请重新登录 xAI');
   });
 
   it('shows an expired account even when no usable xAI credential remains', () => {

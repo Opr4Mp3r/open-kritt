@@ -88,6 +88,48 @@ test('Report Creator refresh labels every expanded finding and context input', (
   }
 });
 
+test('deepened builtin prompts keep finding inputs and require Chinese prose', () => {
+  const deepened = fs.readFileSync(
+    new URL('../../database/init/037_deepen_builtin_prompt_language_zh.sql', import.meta.url),
+    'utf8'
+  );
+  const bodies = [...deepened.matchAll(/\$p037_\d+\$(.*?)\$p037_\d+\$/gs)].map((match) => match[1]);
+
+  assert.equal(bodies.length, 15);
+  for (const body of bodies) {
+    assert.equal(body.includes('不要写英文') || body.includes('不要写成英文'), true);
+    assert.equal(body.includes('path:line symbol - behavior'), false);
+    assert.equal(body.includes('例如 explicit_panic。'), false);
+  }
+  assert.equal(bodies[6].includes('不要翻译这些枚举'), true);
+
+  const report = bodies[4];
+  for (const input of [
+    '{{repo_full}}',
+    '{{repo_scope}}',
+    '{{commit_sha}}',
+    '{{workspace_root}}',
+    '{{workspace_layout}}',
+    '{{workspace_manifest_json}}',
+    '{{configuration}}',
+    '{{dependencies}}',
+    '{{summary}}',
+    '{{vulnerability_type}}',
+    '{{file_path}}',
+    '{{line}}',
+    '{{explanation}}',
+    '{{trigger_flow}}',
+    '{{exploitable}}',
+    '{{malicious_actor}}',
+    '{{malicious_input_example}}',
+    '_reserved_report',
+  ]) {
+    assert.equal(report.includes(input), true, input);
+  }
+  assert.equal(report.includes('## 问题描述'), true);
+  assert.equal(report.includes('## Description'), false);
+});
+
 test('every bundled post-script insert is guarded by name', () => {
   const names = bundledScripts.map((script) => script.name);
   const guards = [

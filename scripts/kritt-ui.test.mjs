@@ -293,7 +293,7 @@ test('interactive home can open setup and save a hidden credential', async (t) =
 
   assert.deepEqual(result, { code: 0 });
   assert.equal(parseEnv(await readFile(project.envFile, 'utf8')).CODEX_API_KEY, 'sk-hidden');
-  assert.deepEqual(terminal.calls.slice(0, 3), ['enter', 'choose:Welcome', 'notice:Setup']);
+  assert.deepEqual(terminal.calls.slice(0, 3), ['enter', 'choose:欢迎', 'notice:设置']);
   assert.equal(terminal.calls.at(-1), 'exit');
 });
 
@@ -389,7 +389,7 @@ test('interactive cancellation restores the terminal and returns signal exit cod
   const result = await runInteractiveCli({ ...project, terminal });
 
   assert.deepEqual(result, { code: 130 });
-  assert.deepEqual(terminal.calls, ['enter', 'choose:Welcome', 'exit']);
+  assert.deepEqual(terminal.calls, ['enter', 'choose:欢迎', 'exit']);
 });
 
 test('TTY detection rejects piped and dumb terminals', () => {
@@ -425,8 +425,8 @@ test('interactive Claude login reports a stopped Docker without suspending the t
   });
 
   assert.deepEqual(result, { code: 0 });
-  const notice = terminal.notices.find((item) => item.title === 'Claude login');
-  assert.equal(notice.subtitle, 'Docker is not ready');
+  const notice = terminal.notices.find((item) => item.title === 'Claude 登录');
+  assert.equal(notice.subtitle, 'Docker 尚未就绪');
   assert.match(notice.message, /The Docker daemon is not reachable/);
   assert.doesNotMatch(notice.message, /unix:\/\/\/var\/run\/docker.sock/);
   assert.equal(

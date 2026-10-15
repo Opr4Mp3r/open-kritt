@@ -528,12 +528,7 @@ export default function ScanDetail() {
             >
               {exporting ? 'Exporting…' : 'Export findings'}
             </Button>
-            <Button
-              variant="ghost"
-              style={{ height: 32 }}
-              to={duplicateScanPath(scan.id)}
-              title="Create a new scan from this configuration"
-            >
+            <Button variant="ghost" style={{ height: 32 }} to={duplicateScanPath(scan.id)} title="使用此配置创建新扫描">
               Duplicate scan
             </Button>
             {actions.canDelete && (
@@ -599,7 +594,7 @@ export default function ScanDetail() {
               fontSize: 12.5,
             }}
           >
-            <strong>Workers adjusted.</strong> {providerAutoscale.message}
+            <strong>工作进程数已调整。</strong> {providerAutoscale.message}
           </div>
         )}
 
@@ -656,12 +651,12 @@ export default function ScanDetail() {
             margin: '22px 0 24px',
           }}
         >
-          <ScanStat label="Raw candidates" value={scan.rawCandidates ?? scan.findings} />
-          <ScanStat label="Findings listed" value={scan.findings} color="var(--accent)" />
-          <ScanStat label="Duplicates" value={scan.duplicateFindings ?? 0} />
-          <ScanStat label="Exploitable" value={scan.exploitable} color="var(--fail)" />
-          <ScanStat label="Post-scripts" value={postScripts.length} />
-          <ScanStat label="Agent skills" value={scan.agentSkillCount || 0} />
+          <ScanStat label="候选结果" value={scan.rawCandidates ?? scan.findings} />
+          <ScanStat label="发现项" value={scan.findings} color="var(--accent)" />
+          <ScanStat label="重复项" value={scan.duplicateFindings ?? 0} />
+          <ScanStat label="可利用" value={scan.exploitable} color="var(--fail)" />
+          <ScanStat label="后处理脚本" value={postScripts.length} />
+          <ScanStat label="智能体技能" value={scan.agentSkillCount || 0} />
           <ScanStat
             label={scan.repoKind === 'local' ? 'Revision' : 'Commit'}
             value={scan.repoKind === 'local' ? 'local snapshot' : scan.commitShort}
@@ -835,7 +830,7 @@ export default function ScanDetail() {
           </div>
         )}
 
-        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Vulnerabilities</div>
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>漏洞</div>
         <div style={{ fontSize: 12.5, color: 'var(--text-2)', marginBottom: 14 }}>
           Ranked by the scan's severity ranker and enriched by post-scripts. Click a finding for the full trace.
         </div>
@@ -899,7 +894,7 @@ export default function ScanDetail() {
         )}
 
         {vulnsLoading && !vulns ? (
-          <Spinner label="Loading vulnerabilities…" />
+          <Spinner label="正在加载漏洞…" />
         ) : vulnsError ? (
           <ErrorState error={vulnsError} onRetry={reloadVulns} />
         ) : list.length === 0 ? (
@@ -951,7 +946,7 @@ export default function ScanDetail() {
                       type="checkbox"
                       checked={allFindingsSelected}
                       onChange={toggleAllFindingSelection}
-                      aria-label="Select all findings"
+                      aria-label="选择所有发现项"
                     />
                     Finding
                   </label>
@@ -1110,7 +1105,7 @@ export default function ScanDetail() {
                         </span>
                         {v.comments && v.comments.trim() && (
                           <span
-                            title="Has a comment"
+                            title="有评论"
                             style={{
                               fontSize: 13,
                               color: 'var(--text-3)',
@@ -1255,7 +1250,7 @@ export function SupplementalPostScriptControls({
 
   return (
     <section
-      aria-label="Additional post-processing"
+      aria-label="额外后处理"
       style={{
         border: '1px solid var(--border)',
         borderRadius: 11,
@@ -1275,7 +1270,7 @@ export function SupplementalPostScriptControls({
         }}
       >
         <div>
-          <div style={{ fontSize: 13.5, fontWeight: 650 }}>Additional post-processing</div>
+          <div style={{ fontSize: 13.5, fontWeight: 650 }}>额外后处理</div>
           <div style={{ marginTop: 3, color: 'var(--text-3)', fontSize: 11.5 }}>
             {mode
               ? `${selectedCount} of ${totalCount} findings selected`
@@ -1539,7 +1534,7 @@ export function SupplementalPostScriptControls({
                             showAvailabilityHelp={false}
                           />
                         ) : (
-                          <div style={{ color: 'var(--fail)' }}>Model choices are not available.</div>
+                          <div style={{ color: 'var(--fail)' }}>模型选项不可用。</div>
                         )}
                         {retryError && (
                           <div className="account-dialog-error" role="alert">
@@ -1744,7 +1739,7 @@ function ScanRunSettings({
               min="1"
               max="1000000"
               step="1"
-              placeholder="unlimited"
+              placeholder="不限制"
               value={activeDraft.job_limit}
               disabled={saving}
               onChange={(event) =>
@@ -1798,13 +1793,13 @@ function ScanRunSettings({
           <RuntimeSetting label="model_provider" value={current.model_provider || '—'} />
           <RuntimeSetting label="thinking_effort" value={current.thinking_effort || '—'} />
           <RuntimeSetting label="harness" value={current.harness} />
-          <RuntimeSetting label="post model" value={current.post_processing_model || '—'} />
-          <RuntimeSetting label="post provider" value={current.post_processing_model_provider || '—'} />
-          <RuntimeSetting label="post effort" value={current.post_processing_thinking_effort || '—'} />
-          <RuntimeSetting label="post harness" value={current.post_processing_harness || '—'} />
-          <RuntimeSetting label="depth overrides" value={Object.keys(current.model_overrides).length || 'none'} />
+          <RuntimeSetting label="后处理模型" value={current.post_processing_model || '—'} />
+          <RuntimeSetting label="后处理提供商" value={current.post_processing_model_provider || '—'} />
+          <RuntimeSetting label="后处理强度" value={current.post_processing_thinking_effort || '—'} />
+          <RuntimeSetting label="后处理运行框架" value={current.post_processing_harness || '—'} />
+          <RuntimeSetting label="深度覆盖数" value={Object.keys(current.model_overrides).length || '无'} />
           <RuntimeSetting
-            label="model jobs"
+            label="模型任务数"
             value={`${scan.jobsStarted || 0} / ${scan.jobLimit == null ? 'unlimited' : scan.jobLimit}`}
           />
         </div>
@@ -2277,16 +2272,19 @@ export function ScanStatusPanel({ scan }) {
             Status
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 8 }}>
-            <RuntimeMetric label="Workflow" value={`${completedLineages}/${expectedLineages}`} />
-            <RuntimeMetric label="Attempts" value={summary.totalAttempts || 0} />
-            <RuntimeMetric label="Running" value={summary.runningAttempts || 0} color="var(--run)" />
-            <RuntimeMetric label="Empty" value={summary.emptyStepResults || 0} />
+            <RuntimeMetric label="工作流" value={`${completedLineages}/${expectedLineages}`} />
+            <RuntimeMetric label="尝试次数" value={summary.totalAttempts || 0} />
+            <RuntimeMetric label="运行中" value={summary.runningAttempts || 0} color="var(--run)" />
+            <RuntimeMetric label="空结果" value={summary.emptyStepResults || 0} />
             <RuntimeMetric
               label={rateLimited ? 'Attempt errors' : 'Failed'}
               value={currentFailedAttempts}
               color={currentFailedAttempts ? (rateLimited ? 'var(--pend)' : 'var(--fail)') : 'var(--text)'}
             />
-            <RuntimeMetric label="Post" value={`${summary.postCompletedAttempts || 0}/${summary.postAttempts || 0}`} />
+            <RuntimeMetric
+              label="后处理"
+              value={`${summary.postCompletedAttempts || 0}/${summary.postAttempts || 0}`}
+            />
           </div>
         </div>
         {summary.progress && (
@@ -2334,14 +2332,14 @@ export function ScanStatusPanel({ scan }) {
               marginBottom: 8,
             }}
           >
-            <span style={{ color: 'var(--text-2)', fontSize: 11.5 }}>Active workers</span>
+            <span style={{ color: 'var(--text-2)', fontSize: 11.5 }}>活动工作进程</span>
             <span style={{ color: 'var(--text-3)', fontSize: 10.5 }}>
               {activeJobs.length} active
               {longestActiveJobMs > 0 ? ` · longest ${formatActiveJobElapsed(longestActiveJobMs)}` : ''}
             </span>
           </div>
           <div
-            aria-label="Active workers by workflow depth"
+            aria-label="按工作流深度显示活动工作进程"
             className="mono"
             style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 9 }}
           >

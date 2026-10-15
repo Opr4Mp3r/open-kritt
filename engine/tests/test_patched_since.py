@@ -155,16 +155,16 @@ def test_patched_since_prompt_requires_newer_comparison_and_exact_fix_commit():
         },
     )
 
-    assert "worktree intentionally remains checked out" in prompt
-    assert "Do not use\n`git rev-parse HEAD`" in prompt
-    assert "exact fixing commit" in prompt
+    assert "工作树有意保持在扫描固定的" in prompt
+    assert "不要仅凭 `git rev-parse HEAD`" in prompt
+    assert "具体修复提交" in prompt
     assert "found_at_commit" in prompt
     assert "_chip_patched" in prompt
     assert "needs_manual_review" in prompt
-    assert "On every run, independently check the live main branch" in prompt
+    assert "每次执行时，都应独立检查该发现所属仓库当前的 main 分支" in prompt
     assert "`repository.workspace_path`" in prompt
     assert "`origin/main`" in prompt
-    assert "never translate unavailable history" in prompt
+    assert "绝不能将无法获取历史解释为" in prompt
     assert "4a7dfc2" in prompt
     assert "bd9ee631" in prompt
     assert "{{patched_since_history}}" not in prompt
@@ -272,7 +272,7 @@ def test_patched_since_without_newer_refs_requires_manual_review_context(tmp_pat
     assert context["target_commit"] == target
     assert context["newer_descendants"] == []
     assert all(item["status"] == "unavailable" for item in context["fetch_results"])
-    assert "requires manual review" in context["reason"]
+    assert "需要人工复核" in context["reason"]
 
 
 def test_patched_since_passes_github_token_to_authenticated_fetch(monkeypatch, tmp_path):

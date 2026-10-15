@@ -1,139 +1,92 @@
-# Threat model & security design
+# 威胁模型与安全设计
 
-open·kritt runs AI agents over **potentially untrusted source code** and handles
-**model/provider credentials** and repository tokens. This document describes the trust
-boundaries, what data goes where, and how to deploy it safely. It complements the
-disclosure process in [SECURITY.md](../SECURITY.md).
+open·kritt 会让 AI 智能体分析**可能不可信的源代码**，并处理**模型/提供商凭据**和代码库令牌。本文介绍信任边界、数据流向以及安全部署方式，与 [SECURITY.md](../SECURITY.md) 中的漏洞披露流程互为补充。
 
-> **One-line summary:** scan agents run as root in disposable containers with writable
-> workspaces and direct internet access. Treat repositories and model output as untrusted,
-> isolate the Docker host, scope credentials minimally, and keep the API private.
+> **一句话总结：**扫描智能体以 root 身份在一次性容器中运行，并拥有可写工作区和直接互联网访问权限。应将代码库和模型输出视为不可信内容，隔离 Docker 主机，尽量缩小凭据权限范围，并确保 API 保持私有。
 
-## Components & data flow
+## 组件与数据流
 
-| Component | Role | Trust level |
+| 组件 | 作用 | 信任级别 |
 | --- | --- | --- |
-| `frontend` | UI (React/Vite) | operator-facing |
-| `backend` | REST API + Postgres access (Express/Prisma) | operator-facing, **unauthenticated by default** |
-| `database` | Postgres — workflows, scans, findings | trusted store |
-| `engine` | Claims scans, checks out repos, runs harnesses | **analyzes untrusted code & prompts** |
-| `executor-view` | Read-only view of executor state/accounts | operator-facing |
+| `frontend` | 用户界面（React/Vite） | 面向操作者 |
+| `backend` | REST API 和 Postgres 访问（Express/Prisma） | 面向操作者，**默认未启用身份验证** |
+| `database` | Postgres：工作流、扫描和发现项 | 可信存储 |
+| `engine` | 领取扫描、检出代码库并运行执行框架 | **分析不可信代码和提示词** |
+| `executor-view` | 只读查看执行器状态/账户 | 面向操作者 |
 
-Flow: UI → backend (create workflow/scan) → Postgres queue → **engine** checks out the
-target repo (+ dependency repos), builds a workspace, and runs each workflow step through
-an AI **harness** (`codex` / `claude-code` / `grok-build`), which sends repository
-content to the **configured model/provider endpoint** → results are written back to
-Postgres → UI.
+数据流：用户界面 → 后端（创建工作流/扫描）→ Postgres 队列 → **引擎**检出目标代码库（以及依赖代码库）、构建工作区，并通过 AI **运行框架**（`codex` / `claude-code` / `grok-build`）执行每个工作流步骤；框架会将代码库内容发送到**已配置的模型/提供商接口** → 结果写回 Postgres → 用户界面读取结果。
 
-Workflow and post-script generation uses a separate Postgres queue. The natural-language
-request is sent to the selected provider, but the generation harness runs without model
-tools or repository access. Postgres retains the request and stores only a validated
-draft or safe failure details, not invalid raw model output; the backend validates
-completed drafts again before the UI may review them.
+工作流和后处理脚本的生成使用独立的 Postgres 队列。自然语言请求会发送到所选提供商，但生成运行框架不会使用模型工具或访问代码库。Postgres 会保留请求，只存储经过校验的草稿或安全的失败详情，不保存无效的原始模型输出；后端也会在用户界面展示草稿前再次验证已完成的草稿。
 
-## Trust boundaries
+## 信任边界
 
-1. **Operator ↔ backend/UI.** The API and UI are unauthenticated by default. Anyone who
-   can reach them can read/create scans, read findings, and change provider account
-   configuration. **Boundary you must enforce yourself** (network isolation / a reverse
-   proxy with auth).
-2. **Engine ↔ analyzed code.** The engine checks out arbitrary repositories and runs AI
-   agents against them. Tool-enabled jobs run as root inside disposable nested containers,
-   with a writable per-job checkout and direct outbound internet. The job receives only its
-   checkout, its job home, and the selected provider credential; it does not receive the
-   Docker socket or the engine's other secret mounts. The engine itself does receive the
-   host Docker socket so it can create these runners, and must be treated as a privileged
-   component.
-3. **open·kritt ↔ model/provider.** Repository content is sent to the configured
-   OpenAI/Codex, Anthropic, OpenRouter, or xAI endpoint. That's a data-egress boundary.
-4. **Host ↔ secrets.** Provider API keys and `GITHUB_TOKEN` live in `.env`. The backend
-   can update that file from Accounts, and the engine passes only the selected provider
-   credential into each harness job.
+1. **操作者 ↔ 后端/用户界面。**默认情况下，API 和用户界面均未启用身份验证。任何能访问它们的人都可能读取或创建扫描、读取发现项并更改提供商账户配置。**你必须自行实施此边界**（网络隔离/带身份验证的反向代理）。
+2. **引擎 ↔ 被分析代码。**引擎会检出任意代码库并让 AI 智能体分析它们。启用了工具的任务会以 root 身份在一次性嵌套容器中运行，使用每项任务独立的可写代码副本，并直接访问外网。任务只会获得自己的代码副本、任务主目录和所选提供商凭据；不会获得 Docker socket 或其他机密挂载。引擎本身可以访问主机 Docker socket 以创建运行器，因此必须将其视为高权限组件。
+3. **open·kritt ↔ 模型/提供商。**代码库内容会发送到已配置的 OpenAI/Codex、Anthropic、OpenRouter 或 xAI 接口。这构成了数据外发边界。
+4. **主机 ↔ 机密信息。**提供商 API 密钥和 `GITHUB_TOKEN` 保存在 `.env` 中。后端可以从账户页面更新此文件；引擎只会将所选提供商的凭据传入对应的框架任务。
 
-## Assets to protect
+## 需要保护的资产
 
-- **Provider credentials** (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`,
-  `XAI_API_KEY`, `CODEX_API_KEY`) and the Codex/Claude login homes.
-- **`GITHUB_TOKEN`** used to check out private repos.
-- **Source code** of scanned repositories (often sensitive/proprietary).
-- **Findings** (real vulnerabilities — sensitive until fixed/disclosed).
-- **Generation requests**, which may describe private security-research goals and are
-  retained in the generation queue.
+- **提供商凭据**（`OPENAI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENROUTER_API_KEY`、`XAI_API_KEY`、`CODEX_API_KEY`）以及 Codex/Claude 登录目录。
+- 用于检出私有代码库的 **`GITHUB_TOKEN`**。
+- 被扫描代码库的**源代码**（通常包含敏感或专有信息）。
+- **发现项**（真实漏洞，在修复或披露之前属于敏感信息）。
+- **生成请求**，其中可能描述私有安全研究目标，并会保留在生成队列中。
 
-## Key threats & mitigations
+## 主要威胁与缓解措施
 
-### 1. Untrusted code & prompt injection
-The engine analyzes attacker-influenced code, and repositories can contain content crafted
-to manipulate the agent (prompt injection) into exfiltrating secrets or misbehaving.
+### 1. 不可信代码与提示词注入
 
-Natural-language workflow and post-script generation requests are also untrusted input.
+引擎会分析受攻击者影响的代码，代码库中可能包含旨在操纵智能体的内容（提示词注入），诱使其泄露机密或执行异常操作。
 
-- **Design mitigations:** every tool-enabled job receives a disposable container, a
-  writable per-job checkout, a copied job home, and a dedicated Docker network. The job
-  does not mount the Docker socket, database, project `.env`, or other jobs. Harness output
-  is schema-constrained JSON. Draft-generation calls run with model tools, user
-  rules/settings, and session persistence disabled; engine and backend validators reject
-  malformed drafts before they reach an editor or resource table.
-- **Deliberate capability:** scan agents run as root in their job container, may use Bash,
-  install packages, compile or test the target, and access the internet directly. A job
-  container is not a security boundary against a kernel or container-runtime exploit.
-- **Operator mitigations:** run the complete stack on a **dedicated VM or Docker host**.
-  Do not colocate it with unrelated sensitive workloads. Assume any scan could be hostile.
+自然语言形式的工作流和后处理脚本生成请求同样属于不可信输入。
 
-### 2. Secret exfiltration
-A compromised/injected agent could try to read credentials or send data out.
+- **设计层面的缓解措施：**每个启用工具的任务都使用一次性容器、独立可写代码副本、复制的任务主目录和专属 Docker 网络。任务不会挂载 Docker socket、数据库、项目 `.env` 或其他任务的数据。运行框架输出受 JSON 结构约束。生成草稿时会禁用模型工具、用户规则/设置和会话持久化；引擎和后端校验器会拒绝无效草稿，阻止其进入编辑器或资源表。
+- **有意开放的能力：**扫描智能体以 root 身份在任务容器中运行，可以使用 Bash、安装软件包、编译或测试目标，并直接访问互联网。任务容器无法防御内核或容器运行时漏洞利用。
+- **操作者可采取的缓解措施：**在**专用虚拟机或 Docker 主机**上运行完整服务栈。不要与无关的敏感工作负载共置。假定任何扫描任务都可能具有恶意行为。
 
-- Keep secrets in `.env` and the provider login/credential stores (**all gitignored**); a
-  `gitleaks` pre-commit hook guards against committing them. Give the engine only the
-  tokens it needs.
-- Prefer **narrowly scoped, short-lived** `GITHUB_TOKEN`s (read-only, only the repos you
-  scan). Rotate provider keys periodically.
-- Scan runners have **direct outbound internet access by default** so agents can research,
-  install tools, and fetch dependencies. If your deployment requires an allowlist or no
-  internet, enforce it outside open·kritt at the Docker host, firewall, or network-policy
-  layer.
-- `ENGINE_CODEX_AUTO_UPDATE` defaults to `false`. Enabling it additionally trusts and
-  requires access to the npm registry.
+### 2. 机密信息泄露
 
-### 3. Data egress to model providers
-Scanning sends code to an external endpoint by default.
+遭入侵或被注入指令的智能体可能尝试读取凭据或向外发送数据。
 
-- Know **where your data goes** before scanning sensitive code. The supported setup paths
-  use Codex/OpenAI, Anthropic, OpenRouter, or xAI (Grok Build) credentials.
-- Review provider data-retention terms for the endpoints you use.
+- 将机密信息保存在 `.env` 和提供商登录/凭据存储中（**这些路径均已加入 Git 忽略规则**）；pre-commit 的 `gitleaks` 钩子可防止意外提交机密信息。仅向引擎提供任务所需的令牌。
+- 优先使用**权限范围窄且有效期短**的 `GITHUB_TOKEN`（只读权限，仅限要扫描的代码库）。定期轮换提供商密钥。
+- 默认情况下，扫描运行器可**直接访问外网**，以便智能体进行研究、安装工具和获取依赖项。如果部署策略要求使用允许列表或禁止联网，请在 open·kritt 外部的 Docker 主机、防火墙或网络策略层实施限制。
+- `ENGINE_CODEX_AUTO_UPDATE` 默认值为 `false`。启用后还会信任 npm 注册表并要求能够访问该注册表。
 
-### 4. Unauthenticated API exposure
-`/api/*` has **no auth** by default.
+### 3. 数据外发到模型提供商
 
-- Do not bind it to public interfaces. Put your own authentication/authorization proxy
-  in front, or keep it on a trusted network only.
-- Anyone who can call the API can enqueue scans or AI draft-generation jobs and consume
-  provider quota. Apply authentication, network controls, and rate limits at the proxy.
+默认情况下，扫描会将代码发送到外部接口。
 
-### 5. Supply chain (of open·kritt itself)
-- Dependencies are updated by **Dependabot** and reviewed via **Dependency Review** on
-  PRs; **CodeQL** scans the code. Docker base images are **pinned** (never `:latest`).
-- The engine can check the npm `@latest` Codex package at startup and daily when
-  `ENGINE_CODEX_AUTO_UPDATE=true`. It is disabled by default; enabling it deliberately
-  trusts the npm registry for that executable.
-- Planned: SBOM generation and signed release artifacts (see the roadmap).
+- 扫描敏感代码前，请先确认**数据将发送到哪里**。受支持的配置方式会使用 Codex/OpenAI、Anthropic、OpenRouter 或 xAI（Grok Build）凭据。
+- 查阅你所用接口对应提供商的数据保留条款。
 
-## Secure deployment checklist
+### 4. 未经身份验证的 API 暴露
 
-- [ ] Run the complete stack on a **dedicated VM or Docker host**. The engine controls the
-      Docker daemon, and scan runners are root with direct outbound internet access.
-- [ ] Add host-level egress controls if direct internet access does not fit your policy.
-- [ ] Put **auth in front of** the backend API and UI.
-- [ ] Use a **minimal, short-lived `GITHUB_TOKEN`**; rotate provider keys.
-- [ ] Choose a model endpoint whose **data handling** matches the sensitivity of the code.
-- [ ] Keep `.env` and `.data/` credential stores private; never commit them.
+默认情况下，`/api/*` **没有身份验证**。
 
-## Out of scope
+- 不要将 API 绑定到公共网络接口。请在前方部署自己的身份验证/授权代理，或仅允许可信网络访问。
+- 任何可以调用 API 的人都能提交扫描或 AI 草稿生成任务并消耗提供商配额。请在代理层实施身份验证、网络控制和速率限制。
 
-- Attacks requiring an already-compromised host or operator account.
-- Misconfigurations explicitly warned about here (e.g. exposing the unauthenticated API to
-  the internet).
-- The security of third-party model providers themselves.
+### 5. open·kritt 自身的供应链
 
-Vulnerabilities **in open·kritt's own code** are always in scope — report them via
-[SECURITY.md](../SECURITY.md).
+- **Dependabot** 会更新依赖，并通过 PR 的 **Dependency Review** 审查依赖变更；**CodeQL** 会扫描代码。Docker 基础镜像版本已固定（绝不使用 `:latest`）。
+- 当 `ENGINE_CODEX_AUTO_UPDATE=true` 时，引擎可以在启动时和之后每天检查 npm 上的 Codex `@latest` 软件包。此功能默认关闭；启用即表示你有意信任 npm 注册表提供的可执行文件。
+- 规划中：生成 SBOM 并签署发布产物（参见路线图）。
+
+## 安全部署清单
+
+- [ ] 在**专用虚拟机或 Docker 主机**上运行完整服务栈。引擎可以控制 Docker 守护进程，扫描运行器以 root 身份运行并可直接访问外网。
+- [ ] 如果直接访问外网不符合策略，请添加主机级出站流量控制。
+- [ ] 在后端 API 和用户界面前部署**身份验证**。
+- [ ] 使用**最小权限且有效期短的 `GITHUB_TOKEN`**；定期轮换提供商密钥。
+- [ ] 选择其**数据处理方式**符合代码敏感级别的模型接口。
+- [ ] 确保 `.env` 和 `.data/` 凭据目录保持私有；切勿提交到仓库。
+
+## 不在范围内
+
+- 需要攻击者已控制主机或操作者账户的攻击。
+- 本文明确警告过的错误配置（例如将未启用身份验证的 API 暴露到互联网）。
+- 第三方模型提供商自身的安全性。
+
+**open·kritt 自身代码中的漏洞**始终属于报告范围，请通过 [SECURITY.md](../SECURITY.md) 报告。

@@ -38,7 +38,7 @@ const CODEX_LOGIN_CONTAINER_BOOTSTRAP =
   'umask 077; mkdir -p "$HOME" "$CODEX_HOME" && chmod 700 "$HOME" "$CODEX_HOME" && exec codex "$@"';
 const MAX_CAPTURED_OUTPUT = 64 * 1024;
 const DOCKER_PROBE_TIMEOUT_MS = 30_000;
-const DOCKER_INSTALL_HINT = 'Install Docker Desktop, or Docker Engine with the Docker Compose plugin, then try again.';
+const DOCKER_INSTALL_HINT = '请安装 Docker Desktop，或安装带 Docker Compose 插件的 Docker Engine，然后重试。';
 
 // `docker compose run --build` backs both guided logins and arrived in Compose 2.13.0.
 export const MINIMUM_COMPOSE_VERSION = '2.13.0';
@@ -46,38 +46,38 @@ export const MINIMUM_COMPOSE_VERSION = '2.13.0';
 export const ENVIRONMENT_ITEMS = [
   {
     key: 'CODEX_API_KEY',
-    label: 'Codex API key',
-    info: 'Used by the Codex harness. It is an alternative to signing in to Codex through this CLI.',
+    label: 'Codex API 密钥',
+    info: '供 Codex 运行框架使用，可替代通过此命令行工具登录 Codex。',
   },
   {
     key: 'OPENAI_API_KEY',
-    label: 'OpenAI API key',
-    info: 'Used as a Codex API key when CODEX_API_KEY is not set.',
+    label: 'OpenAI API 密钥',
+    info: '未设置 CODEX_API_KEY 时，将此密钥用作 Codex API 密钥。',
   },
   {
     key: 'ANTHROPIC_API_KEY',
-    label: 'Anthropic API key',
-    info: 'Used by the Claude Code harness as an alternative to the guided Claude subscription login.',
+    label: 'Anthropic API 密钥',
+    info: '供 Claude Code 运行框架使用，可替代 Claude 订阅交互式登录。',
   },
   {
     key: 'DEEPSEEK_API_KEY',
-    label: 'DeepSeek API key',
-    info: 'Used by the Codex harness with models available to the configured DeepSeek account.',
+    label: 'DeepSeek API 密钥',
+    info: '由 Codex 运行框架配合已配置 DeepSeek 账户可用的模型使用。',
   },
   {
     key: 'OPENROUTER_API_KEY',
-    label: 'OpenRouter API key',
-    info: 'Used for supported OpenRouter-compatible model and harness selections.',
+    label: 'OpenRouter API 密钥',
+    info: '用于受支持的 OpenRouter 兼容模型和运行框架。',
   },
   {
     key: 'XAI_API_KEY',
-    label: 'xAI API key',
-    info: 'Used by the Grok Build harness via the xAI provider.',
+    label: 'xAI API 密钥',
+    info: '通过 xAI 提供商供 Grok Build 运行框架使用。',
   },
   {
     key: 'GITHUB_TOKEN',
-    label: 'GitHub token',
-    info: 'Optional. It lets the engine clone private GitHub repositories and dependencies. Public and local scans do not need it.',
+    label: 'GitHub 令牌',
+    info: '可选。允许引擎克隆私有 GitHub 代码库及其依赖项。公开仓库和本地扫描不需要此令牌。',
   },
 ];
 
@@ -86,18 +86,18 @@ export function providerEnvironmentItems() {
 }
 
 export const CODEX_LOGIN = {
-  label: 'Codex login',
-  info: 'A persisted Codex login is used when no Codex API key is set. The guided flow uses Codex device authentication, so it does not rely on a container localhost callback.',
+  label: 'Codex 登录',
+  info: '未设置 Codex API 密钥时会使用已保存的 Codex 登录。交互式流程使用 Codex 设备身份验证，因此不依赖容器中的 localhost 回调。',
 };
 
 export const CLAUDE_LOGIN = {
-  label: 'Claude login',
-  info: 'A persisted Claude subscription login is shared by setup, the Accounts tab, and future Claude Code jobs.',
+  label: 'Claude 登录',
+  info: '已保存的 Claude 订阅登录可用于设置、账户页面以及后续 Claude Code 任务。',
 };
 
 export class UserCancelledError extends Error {
   constructor(signal = 'SIGINT') {
-    super('Cancelled.');
+    super('已取消。');
     this.exitCode = signal === 'SIGTERM' ? 143 : 130;
     this.signal = signal;
   }
@@ -105,7 +105,7 @@ export class UserCancelledError extends Error {
 
 class CommandError extends Error {
   constructor(command, cause) {
-    super(`Could not run ${command}: ${cause.message}`);
+    super(`无法运行 ${command}：${cause.message}`);
     this.cause = cause;
   }
 }

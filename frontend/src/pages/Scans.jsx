@@ -19,12 +19,12 @@ import { useNewestFirst, usePagination } from '../lib/usePagination.js';
 import Pagination from '../components/Pagination.jsx';
 
 const FILTERS = [
-  ['all', 'All'],
-  ['running', 'Running'],
-  ['queued', 'Queued'],
-  ['rate_limited', 'Rate limited'],
-  ['completed', 'Completed'],
-  ['failed', 'Failed'],
+  ['all', '全部'],
+  ['running', '运行中'],
+  ['queued', '排队中'],
+  ['rate_limited', '受速率限制'],
+  ['completed', '已完成'],
+  ['failed', '失败'],
 ];
 const SCANS_PAGE_SIZE = 6;
 
@@ -44,7 +44,7 @@ export default function Scans() {
   useEffect(() => {
     setDialogOpen(newDialogParam === '1');
   }, [newDialogParam]);
-  usePageChrome([{ label: 'Scans', active: true }], { label: '+ New scan', to: '/scans?new=1' }, []);
+  usePageChrome([{ label: '扫描', active: true }], { label: '+ 新建扫描', to: '/scans?new=1' }, []);
   const requestKey = `${filter}:${page}`;
   const { data, loading, error, reload } = useFetch(
     async () => ({ ...(await api.scanPage({ status: filter, page, pageSize: SCANS_PAGE_SIZE })), requestKey }),
@@ -94,7 +94,7 @@ export default function Scans() {
   const deleteScan = async (event, scan) => {
     event.stopPropagation();
     const confirmed = window.confirm(
-      `Permanently delete scan #${scan.id} and all findings, attempts, logs, and review data? This cannot be undone.`
+      `确定永久删除扫描 #${scan.id} 及其所有发现结果、尝试记录、日志和审查数据吗？此操作无法撤销。`
     );
     if (!confirmed) return;
     setBusyScanId(scan.id);
@@ -113,11 +113,9 @@ export default function Scans() {
     <div className="scans-page" style={{ padding: '30px 32px', maxWidth: 1180 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 18 }}>
         <div>
-          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>Scans</div>
+          <div style={{ fontSize: 27, fontWeight: 600, letterSpacing: '-0.02em' }}>扫描</div>
           <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 3 }}>
-            {pageData
-              ? `${pageData.totalItems} scan${pageData.totalItems === 1 ? '' : 's'} · ${pageData.runningCount} running now`
-              : ' '}
+            {pageData ? `${pageData.totalItems} 项扫描 · ${pageData.runningCount} 项正在运行` : ' '}
           </div>
         </div>
       </div>
@@ -151,9 +149,9 @@ export default function Scans() {
       {actionError && <ErrorState error={actionError} />}
       {pageData && pageData.totalItems === 0 && (
         <EmptyState
-          title="No scans here"
-          sub="Queue a scan by pointing a workflow at a repository."
-          action={<Button to="/scans?new=1">+ New scan</Button>}
+          title="这里还没有扫描"
+          sub="选择工作流和代码库，将扫描加入队列。"
+          action={<Button to="/scans?new=1">+ 新建扫描</Button>}
         />
       )}
       {pageData && pageData.totalItems > 0 && (
@@ -249,7 +247,7 @@ function NewScanDialog({ onClose }) {
           </div>
           <button
             type="button"
-            aria-label="Close"
+            aria-label="关闭"
             onClick={onClose}
             style={{
               border: 'none',
@@ -268,12 +266,12 @@ function NewScanDialog({ onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <ScanCreationOption
                 autoFocus
-                title="Blank scan"
-                sub="Start with the default scan configuration and choose every input yourself."
+                title="空白扫描"
+                sub="从默认扫描配置开始，并自行选择所有输入项。"
                 to="/scans/new"
               />
               <ScanCreationOption
-                title="Duplicate an existing scan"
+                title="复制现有扫描"
                 sub={duplicateDescription}
                 disabled={duplicateDisabled}
                 onClick={() => !duplicateDisabled && setMode('duplicate')}
@@ -285,7 +283,7 @@ function NewScanDialog({ onClose }) {
                 Pick a scan to copy — only its editable configuration is carried into the new draft.
               </div>
 
-              {loading && !data && <Spinner label="Loading previous scans…" />}
+              {loading && !data && <Spinner label="正在加载之前的扫描…" />}
               {error && <ErrorState error={error} onRetry={reload} />}
               {data && hasScans && (
                 <>
@@ -548,7 +546,7 @@ export function ScanCard({ scan, to, onResume, onToggleError, onDelete, busy, er
             color: 'var(--text-2)',
           }}
         >
-          <div>Paused — completed work is preserved.</div>
+          <div>已暂停 — 已完成的工作会保留。</div>
           <div onClick={(event) => event.stopPropagation()} style={{ position: 'relative', zIndex: 2, marginTop: 10 }}>
             <Button variant="subtle" style={{ height: 30, padding: '0 12px' }} onClick={onResume} disabled={busy}>
               {busy ? '…' : 'Resume'}
@@ -586,7 +584,7 @@ export function ScanCard({ scan, to, onResume, onToggleError, onDelete, busy, er
               style={{ height: 30, padding: '0 12px', flex: 'none' }}
               onClick={onResume}
               disabled={busy}
-              title="Continue from completed steps and retry failed work"
+              title="从已完成的步骤继续，并重试失败的任务"
             >
               {busy ? '…' : 'Resume'}
             </Button>
@@ -709,7 +707,7 @@ function ScanActionsMenu({ scan, onDelete, busy }) {
         aria-label={`Actions for scan #${scan.id}`}
         aria-haspopup="menu"
         aria-expanded={open}
-        title="Scan actions"
+        title="扫描操作"
         onClick={() => setOpen((current) => !current)}
         style={{
           width: 28,

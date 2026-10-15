@@ -458,7 +458,7 @@ test('full-screen headless prompts add friendly menu metadata and scan status co
   assert.equal(await prompter.select('Inspect a scan', scans, { label: (scan) => `#${scan.id}` }), scans[1]);
 
   assert.match(calls[0].subtitle, /connected to http:\/\/127\.0\.0\.1:3002\/api/);
-  assert.match(calls[0].options[0].description, /guided setup/);
+  assert.match(calls[0].options[0].description, /通过引导配置来创建并启动扫描/);
   assert.equal(calls[1].options[0].tone, 'info');
   assert.equal(calls[1].options[1].tone, 'danger');
   assert.match(calls[1].options[1].description, /acme\/web/);

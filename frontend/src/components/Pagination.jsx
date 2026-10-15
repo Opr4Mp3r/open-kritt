@@ -8,7 +8,7 @@ export default function Pagination({
   startIndex,
   endIndex,
   setPage,
-  itemLabel = 'items',
+  itemLabel = '项',
   compact = false,
   style,
 }) {
@@ -29,7 +29,7 @@ export default function Pagination({
 
   return (
     <nav
-      aria-label={`${itemLabel} pagination`}
+      aria-label={`${itemLabel}分页`}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -41,12 +41,12 @@ export default function Pagination({
       }}
     >
       <span className="mono" style={{ color: 'var(--text-3)', fontSize: compact ? 10.5 : 11.5 }}>
-        {startIndex + 1}–{endIndex} of {totalItems} {itemLabel}
+        共 {totalItems} {itemLabel}，当前显示 {startIndex + 1}–{endIndex}
       </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         <button
           type="button"
-          aria-label={`Previous ${itemLabel} page`}
+          aria-label={`上一页${itemLabel}`}
           disabled={page === 1}
           onClick={() => setPage(page - 1)}
           style={buttonStyle(false, page === 1)}
@@ -58,7 +58,7 @@ export default function Pagination({
             <button
               key={token}
               type="button"
-              aria-label={`Page ${token}`}
+              aria-label={`第 ${token} 页`}
               aria-current={token === page ? 'page' : undefined}
               onClick={() => setPage(token)}
               style={buttonStyle(token === page)}
@@ -73,7 +73,7 @@ export default function Pagination({
         )}
         <button
           type="button"
-          aria-label={`Next ${itemLabel} page`}
+          aria-label={`下一页${itemLabel}`}
           disabled={page === totalPages}
           onClick={() => setPage(page + 1)}
           style={buttonStyle(false, page === totalPages)}

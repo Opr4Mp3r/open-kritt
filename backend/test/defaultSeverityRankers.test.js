@@ -13,8 +13,11 @@ test('ships one valid conservative default severity ranker', () => {
   assert.equal(DEFAULT_SEVERITY_RANKERS.length, 1);
   const ranker = validateSeverityRanker(DEFAULT_SEVERITY_RANKERS[0]);
   assert.equal(ranker.name, 'Blockchain security triage');
-  assert.match(ranker.content, /Critical:/);
-  assert.match(ranker.content, /false positives last/i);
+  assert.match(ranker.content, /Critical（严重）/);
+  assert.match(ranker.content, /High（高危）/);
+  assert.match(ranker.content, /将很可能是误报的发现排在最后/);
+  assert.match(ranker.content, /你写入的评级理由用简体中文/);
+  assert.match(ranker.content, /不要翻译这些枚举/);
   assert.equal(isDefaultSeverityRankerName(ranker.name), true);
   assert.equal(
     serializeSeverityRanker({ id: 1n, ...ranker }, { isDefault: isDefaultSeverityRankerName(ranker.name) }).isDefault,
