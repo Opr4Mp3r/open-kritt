@@ -185,6 +185,7 @@ class Database:
                 SELECT s.id
                 FROM public.scans s
                 WHERE s.status = 'completed'
+                  AND s.configuration->>'manually_completed' IS DISTINCT FROM 'true'
                   AND EXISTS (
                       SELECT 1 FROM workflows.vulnerabilities v WHERE v.scan_id = s.id
                   )

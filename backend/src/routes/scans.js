@@ -47,16 +47,16 @@ export const MAX_SUPPLEMENTAL_POST_SCRIPT_TARGETS = 10_000;
 export const SUPPLEMENTAL_POST_SCRIPT_SCAN_STATUSES = ['paused', 'completed', 'stopped', 'failed'];
 export const SCAN_LIST_ORDER = Object.freeze([{ updatedAt: 'desc' }, { id: 'desc' }]);
 const USER_STATUS_TRANSITIONS = Object.freeze({
-  queued: new Set(['stopped']),
-  pending: new Set(['stopped']),
-  prewarming_cache: new Set(['paused', 'stopped']),
-  running: new Set(['paused', 'stopped']),
-  rate_limited: new Set(['stopped']),
-  paused: new Set(['pending', 'stopped']),
-  post_processing: new Set(['paused', 'stopped']),
+  queued: new Set(['stopped', 'completed']),
+  pending: new Set(['stopped', 'completed']),
+  prewarming_cache: new Set(['paused', 'stopped', 'completed']),
+  running: new Set(['paused', 'stopped', 'completed']),
+  rate_limited: new Set(['stopped', 'completed']),
+  paused: new Set(['pending', 'stopped', 'completed']),
+  post_processing: new Set(['paused', 'stopped', 'completed']),
   completed: new Set(),
-  stopped: new Set(['pending']),
-  failed: new Set(['pending']),
+  stopped: new Set(['pending', 'completed']),
+  failed: new Set(['pending', 'completed']),
 });
 
 function paginationInteger(value) {
@@ -626,6 +626,17 @@ export async function patchScanIfPresent(tx, scanId, body, { assertAvailable, av
       }
     }
     data.status = status;
+    if (status === 'completed') {
+      // 记录人工完成，防止引擎因缺少后处理结果而自动恢复扫描。
+      data.configuration = {
+        ...(existing.configuration &&
+        typeof existing.configuration === 'object' &&
+        !Array.isArray(existing.configuration)
+          ? existing.configuration
+          : {}),
+        manually_completed: true,
+      };
+    }
     if (status === 'pending' && existing.status !== 'pending') {
       // Nullable Prisma JSON fields distinguish SQL NULL from the JSON scalar
       // `null`. Scan reasoning is either an object or SQL NULL; storing a JSON
@@ -653,9 +664,10 @@ export async function patchScanIfPresent(tx, scanId, body, { assertAvailable, av
   if (
     Object.keys(postProcessingConfigurationKeys).some((key) => Object.prototype.hasOwnProperty.call(runtimeData, key))
   ) {
+    const currentConfiguration = data.configuration ?? existing.configuration;
     const configuration = {
-      ...(existing.configuration && typeof existing.configuration === 'object' && !Array.isArray(existing.configuration)
-        ? existing.configuration
+      ...(currentConfiguration && typeof currentConfiguration === 'object' && !Array.isArray(currentConfiguration)
+        ? currentConfiguration
         : {}),
     };
     for (const [runtimeKey, configurationKey] of Object.entries(postProcessingConfigurationKeys)) {
@@ -972,8 +984,9 @@ router.post('/', async (req, res, next) => {
 
     const configurationObject =
       valid.configuration && typeof valid.configuration === 'object' && !Array.isArray(valid.configuration)
-        ? valid.configuration
+        ? { ...valid.configuration }
         : {};
+    delete configurationObject.manually_completed;
     const configuredPostScriptIds = [
       ...new Set(
         [
@@ -1147,6 +1160,7 @@ router.patch('/:id', async (req, res, next) => {
     }
     res.json(await assembleScan(result.scan));
   } catch (e) {
+    if (e.status === 409) return res.status(409).json({ error: e.message });
     next(e);
   }
 });

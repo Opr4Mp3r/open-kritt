@@ -833,6 +833,33 @@ def test_claim_scan_keeps_queued_work_waiting_while_any_scan_is_active():
     assert all("status = 'queued'" not in query for query, _params in conn.calls)
 
 
+def test_claim_scan_excludes_manual_completion_from_post_process_recovery():
+    conn = _RecordingConnection(rows=(None, {"count": 0}, None, None, None, []))
+
+    assert Database("").claim_scans(conn) == []
+
+    recovery_query = conn.calls[4][0]
+    candidate_query = recovery_query.split("UPDATE public.scans s", 1)[0]
+    assert "WHERE s.status = 'completed'" in candidate_query
+    assert "s.configuration->>'manually_completed' IS DISTINCT FROM 'true'" in candidate_query
+    assert "::boolean" not in candidate_query
+
+
+@pytest.mark.parametrize("configuration", [None, {}, {"manually_completed": False}])
+def test_claim_scan_preserves_recovery_for_natural_completion(configuration):
+    recovered = {"id": 81, "status": "post_processing", "configuration": configuration}
+    conn = _RecordingConnection(rows=(None, {"count": 0}, None, None, recovered, [recovered]))
+
+    assert Database("").claim_scan(conn) == recovered
+
+    recovery_query = conn.calls[4][0]
+    assert "s.configuration->>'manually_completed' IS DISTINCT FROM 'true'" in recovery_query
+    assert "v.dedupe_is_canonical IS NULL" in recovery_query
+    assert "v.bounty_rank IS NULL" in recovery_query
+    assert "FROM workflows.vulnerability_enrichments e" in recovery_query
+    assert "SET status = 'post_processing'" in recovery_query
+
+
 def test_logical_job_limit_consumes_new_slots_but_not_retries():
     database = Database("")
     retry_conn = _RecordingConnection()

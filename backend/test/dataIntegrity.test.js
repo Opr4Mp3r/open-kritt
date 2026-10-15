@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { once } from 'node:events';
 import { Prisma } from '@prisma/client';
 
-import { prismaUniqueConflict } from '../src/app.js';
+import { createApp, prismaUniqueConflict } from '../src/app.js';
+import { prisma } from '../src/db.js';
+import { SCAN_STATUSES } from '../src/lib/constants.js';
 import { DEFAULT_WORKFLOW_NAMES } from '../src/lib/defaultWorkflows.js';
 import { validateScanJobLimit, ValidationError } from '../src/lib/validation.js';
 import { agentSkillMutationState, countAgentSkillScanUsage } from '../src/routes/agentSkills.js';
@@ -706,9 +709,170 @@ test('scan status updates accept only user-owned lifecycle transitions', async (
   };
 
   await assert.rejects(
-    patchScanIfPresent(tx, 8n, { status: 'completed' }, { assertAvailable: async () => {} }),
+    patchScanIfPresent(tx, 8n, { status: 'post_processing' }, { assertAvailable: async () => {} }),
     (error) => error.status === 409
   );
+});
+
+test('manual completion is idempotent from every scan status and preserves existing data', async (t) => {
+  for (const status of SCAN_STATUSES) {
+    await t.test(status, async () => {
+      const retained = {
+        id: 8n,
+        reasoning: { error: 'prior execution failed', resultCount: 12 },
+        configuration: { post_script_ids: [1, 2] },
+        modelOverrides: {},
+        jobsStarted: 18,
+        jobLimit: 100,
+        lastResumedAt: new Date('2026-10-01T00:00:00Z'),
+      };
+      let current = { ...retained, status };
+      const completedData = {
+        status: 'completed',
+        configuration: { ...retained.configuration, manually_completed: true },
+      };
+      const calls = [];
+      const tx = {
+        $queryRaw: async (query, id) => {
+          assert.match(query.join(''), /SELECT id FROM public\.scans WHERE id = .* FOR UPDATE/);
+          assert.equal(id, 8n);
+          calls.push('lock');
+        },
+        scan: {
+          findUnique: async () => {
+            calls.push('read');
+            return current;
+          },
+          update: async ({ where, data }) => {
+            assert.deepEqual(where, { id: 8n });
+            assert.deepEqual(data, completedData);
+            calls.push('update');
+            current = { ...current, ...data };
+            return current;
+          },
+        },
+      };
+      const options = { assertAvailable: async () => assert.fail('completion must not need model credentials') };
+
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const result = await patchScanIfPresent(tx, 8n, { status: 'completed' }, options);
+        assert.deepEqual(result, { kind: 'updated', scan: { ...retained, ...completedData } });
+      }
+      assert.deepEqual(retained.configuration, { post_script_ids: [1, 2] });
+      assert.deepEqual(calls, ['lock', 'read', 'update', 'lock', 'read', 'update']);
+    });
+  }
+});
+
+test('completion keeps its marker when the same PATCH changes post-processing settings', async () => {
+  const current = {
+    id: 8n,
+    status: 'post_processing',
+    model: 'gpt-5.5',
+    modelProvider: 'codex',
+    harness: 'codex',
+    thinkingEffort: 'high',
+    configuration: {
+      post_script_ids: [1, 2],
+      audit_note: 'keep existing metadata',
+      post_processing_thinking_effort: 'high',
+    },
+  };
+  const checked = [];
+  const writes = [];
+  const tx = {
+    $queryRaw: async () => [],
+    scan: {
+      findUnique: async () => current,
+      update: async ({ data }) => {
+        writes.push(data);
+        return { ...current, ...data };
+      },
+    },
+  };
+
+  const result = await patchScanIfPresent(
+    tx,
+    8n,
+    {
+      status: 'completed',
+      post_processing_model: 'claude-sonnet',
+      post_processing_model_provider: 'claude',
+      post_processing_harness: 'claude-code',
+      post_processing_thinking_effort: 'medium',
+    },
+    { assertAvailable: async (selection) => checked.push(selection) }
+  );
+
+  const expectedConfiguration = {
+    ...current.configuration,
+    manually_completed: true,
+    post_processing_model: 'claude-sonnet',
+    post_processing_model_provider: 'claude',
+    post_processing_harness: 'claude-code',
+    post_processing_thinking_effort: 'medium',
+  };
+  assert.deepEqual(writes, [{ status: 'completed', configuration: expectedConfiguration }]);
+  assert.deepEqual(result.scan.configuration, expectedConfiguration);
+  assert.deepEqual(checked, [
+    { model: 'claude-sonnet', modelProvider: 'claude', harness: 'claude-code', thinkingEffort: 'medium' },
+  ]);
+});
+
+test('completed scans remain terminal and cannot resume', async () => {
+  const tx = {
+    $queryRaw: async () => [],
+    scan: {
+      findUnique: async () => ({ id: 8n, status: 'completed' }),
+      update: async () => assert.fail('completed scans must not resume'),
+    },
+  };
+
+  await assert.rejects(patchScanIfPresent(tx, 8n, { status: 'pending' }), (error) => error.status === 409);
+});
+
+test('the scan PATCH route returns 409 without changing a manually completed scan', async (t) => {
+  const scan = {
+    id: 8n,
+    status: 'completed',
+    configuration: { manually_completed: true, post_script_ids: [1, 2] },
+    reasoning: { resultCount: 12 },
+    jobsStarted: 18,
+  };
+  const before = structuredClone(scan);
+  const calls = [];
+  const tx = {
+    $queryRaw: async () => calls.push('lock'),
+    scan: {
+      findUnique: async () => {
+        calls.push('read');
+        return scan;
+      },
+      update: async () => assert.fail('a rejected resume must not write scan data'),
+    },
+  };
+  const originalTransaction = prisma.$transaction;
+  prisma.$transaction = async (operation) => operation(tx);
+  t.after(() => {
+    prisma.$transaction = originalTransaction;
+  });
+
+  const server = createApp().listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/api/scans/8`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'pending' }),
+    });
+
+    assert.equal(response.status, 409);
+    assert.deepEqual(await response.json(), { error: 'Cannot change a completed scan to pending.' });
+    assert.deepEqual(scan, before);
+    assert.deepEqual(calls, ['lock', 'read']);
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
 });
 
 test('scan job limits are validated and can be raised or removed', async () => {

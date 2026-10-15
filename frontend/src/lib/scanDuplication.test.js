@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { duplicateScanPath, newScanChooserPath, scanConfigurationDraft } from './scanDuplication.js';
 
 describe('scanConfigurationDraft', () => {
-  it('copies reusable scan inputs and strips relationship metadata from configuration JSON', () => {
+  it('copies reusable scan inputs and strips execution and relationship metadata from configuration JSON', () => {
     const source = {
       id: '91',
       workflowId: '11',
@@ -21,6 +21,7 @@ describe('scanConfigurationDraft', () => {
         { kind: 'local', repoFull: 'local-library', commitSha: 'LOCAL_SNAPSHOT' },
       ],
       configuration: {
+        manually_completed: true,
         max_files: 1200,
         include_tests: true,
         post_script_ids: ['21', '22'],
@@ -49,7 +50,7 @@ describe('scanConfigurationDraft', () => {
       },
       extra: { threat_model: { actor: 'anonymous user' } },
       severityRanker: '# Ranking rules',
-      status: 'failed',
+      status: 'completed',
       findings: 8,
       statusSummary: { stepAttempts: 17 },
       jobLimit: 250,
@@ -100,6 +101,8 @@ describe('scanConfigurationDraft', () => {
     expect(draft).not.toHaveProperty('findings');
     expect(draft).not.toHaveProperty('statusSummary');
     expect(draft).not.toHaveProperty('insertedAt');
+    expect(JSON.parse(draft.configuration)).not.toHaveProperty('manually_completed');
+    expect(source.configuration.manually_completed).toBe(true);
 
     draft.extra.threat_model.actor = 'changed';
     expect(source.extra.threat_model.actor).toBe('anonymous user');

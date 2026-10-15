@@ -39,6 +39,7 @@ export function scanActions(status) {
   const active = ['prewarming_cache', 'running', 'post_processing'].includes(status);
   return {
     canPause: active,
+    canComplete: active || ['queued', 'pending', 'rate_limited', 'paused', 'stopped', 'failed'].includes(status),
     canResume: ['paused', 'failed', 'stopped'].includes(status),
     canStop: ['queued', 'pending', 'prewarming_cache', 'running', 'rate_limited', 'paused', 'post_processing'].includes(
       status
@@ -203,6 +204,12 @@ export default function ScanDetail() {
   const findingPages = usePagination(vulns || [], { pageSize: 20, resetKey: id });
 
   const setStatus = async (status) => {
+    if (
+      status === 'completed' &&
+      !window.confirm('将扫描标记为已完成？系统将停止自动扫描和自动后处理，保留已有结果。已经启动的任务仍会收尾。')
+    ) {
+      return;
+    }
     setBusy(true);
     setActionError(null);
     try {
@@ -554,6 +561,16 @@ export default function ScanDetail() {
             {actions.canStop && (
               <Button variant="danger" style={{ height: 32 }} onClick={() => !busy && setStatus('stopped')}>
                 {busy ? '…' : actions.stopLabel}
+              </Button>
+            )}
+            {actions.canComplete && (
+              <Button
+                variant="subtle"
+                style={{ height: 32 }}
+                onClick={() => !busy && setStatus('completed')}
+                disabled={busy}
+              >
+                {busy ? '…' : '标记为已完成'}
               </Button>
             )}
             {actions.canResume && (

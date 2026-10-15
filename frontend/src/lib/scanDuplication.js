@@ -1,6 +1,7 @@
 import { modelOverridesDraft } from './modelOverrides.js';
 
 const CONFIGURATION_RELATION_KEYS = [
+  'manually_completed',
   'post_script_ids',
   'post_scripts',
   'agent_skill_ids',

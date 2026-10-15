@@ -1,10 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router-dom';
+import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router-dom';
 import { configuredModelCatalog } from '../lib/modelProviders.js';
+import { useFetch } from '../lib/useFetch.js';
+import { Button } from '../components/ui.jsx';
+import { ChromeProvider } from '../context/ui.jsx';
 
-import {
+import ScanDetail, {
   activeJobDepthSummary,
   activeJobWorkflowDepth,
   formatActiveJobElapsed,
@@ -20,6 +23,12 @@ import {
   SupplementalPostScriptControls,
   ScanStatusPanel,
 } from './ScanDetail.jsx';
+
+vi.mock('../lib/useFetch.js', () => ({ useFetch: vi.fn() }));
+vi.mock('../components/ui.jsx', async (importOriginal) => {
+  const original = await importOriginal();
+  return { ...original, Button: vi.fn(original.Button) };
+});
 
 const supplementalModelReferences = {
   providers: ['codex'],
@@ -383,6 +392,85 @@ describe('scan run settings', () => {
 });
 
 describe('scan lifecycle actions', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    'queued',
+    'pending',
+    'prewarming_cache',
+    'running',
+    'rate_limited',
+    'post_processing',
+    'paused',
+    'stopped',
+    'failed',
+  ])('allows marking a %s scan as completed', (status) => {
+    expect(scanActions(status).canComplete).toBe(true);
+  });
+
+  function renderScan(status) {
+    const reload = vi.fn();
+    const result = { data: [], loading: false, error: null, reload, setData: vi.fn() };
+    vi.mocked(useFetch)
+      .mockReturnValue(result)
+      .mockReturnValueOnce({ ...result, data: { id: '9', repoFull: 'owner/repo', status, findings: 0 } })
+      .mockReturnValueOnce(result)
+      .mockReturnValueOnce({ ...result, data: null });
+    vi.mocked(Button).mockClear();
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/scans/:id',
+          element: (
+            <ChromeProvider>
+              <ScanDetail />
+            </ChromeProvider>
+          ),
+        },
+      ],
+      { initialEntries: ['/scans/9'] }
+    );
+    const html = renderToStaticMarkup(<RouterProvider router={router} />);
+    const completeButton = vi.mocked(Button).mock.calls.find(([props]) => props.children === '标记为已完成')?.[0];
+    return { html, completeButton, reload };
+  }
+
+  it('hides completion for completed and unknown scan states', () => {
+    expect(scanActions('completed').canComplete).toBe(false);
+    expect(scanActions('unknown').canComplete).toBe(false);
+    expect(renderScan('completed').html).not.toContain('标记为已完成');
+  });
+
+  it.each([false, true])('only submits completion after confirmation: %s', async (confirmed) => {
+    const confirm = vi.fn(() => confirmed);
+    const fetch = vi.fn().mockResolvedValue({ status: 200, ok: true, json: async () => ({ status: 'completed' }) });
+    vi.stubGlobal('window', { confirm });
+    vi.stubGlobal('fetch', fetch);
+    const { html, completeButton, reload } = renderScan('running');
+    expect(html).toContain('标记为已完成');
+    expect(completeButton.disabled).toBe(false);
+
+    await completeButton.onClick();
+
+    expect(confirm).toHaveBeenCalledWith(
+      expect.stringMatching(/停止自动扫描和自动后处理.*保留已有结果.*已经启动的任务仍会收尾/)
+    );
+    if (confirmed) {
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/scans/9',
+        expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ status: 'completed' }) })
+      );
+      expect(reload).toHaveBeenCalledTimes(1);
+    } else {
+      expect(fetch).not.toHaveBeenCalled();
+      expect(reload).not.toHaveBeenCalled();
+    }
+  });
+
   it('offers stop controls without allowing active deletion', () => {
     expect(scanActions('running')).toMatchObject({
       canPause: true,
