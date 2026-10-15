@@ -52,6 +52,21 @@ test('API base defaults to the project backend port and accepts an explicit /api
   await assert.rejects(resolveHeadlessApiBase({ rootDir, apiUrl: 'file:///tmp/socket' }), /must use http or https/);
 });
 
+test('explicit API URLs bypass the project environment file entirely', async (t) => {
+  const rootDir = await temporaryProject(t);
+  await mkdir(join(rootDir, '.env'));
+
+  assert.equal(
+    await resolveHeadlessApiBase({ rootDir, env: {}, apiUrl: 'http://127.0.0.1:4312' }),
+    'http://127.0.0.1:4312/api'
+  );
+  assert.equal(
+    await resolveHeadlessApiBase({ rootDir, env: { OPEN_KRITT_API_URL: 'http://127.0.0.1:4313/api/' } }),
+    'http://127.0.0.1:4313/api'
+  );
+  await assert.rejects(resolveHeadlessApiBase({ rootDir, env: {} }), { code: 'EISDIR' });
+});
+
 test('attachment filenames reject paths and decode RFC 5987 names', () => {
   assert.equal(attachmentFilename('attachment; filename="../scan.zip"'), 'scan.zip');
   assert.equal(attachmentFilename("attachment; filename*=UTF-8''scan%20results.zip"), 'scan results.zip');

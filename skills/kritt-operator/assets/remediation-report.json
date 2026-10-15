@@ -1,0 +1,8 @@
+{
+  "name": "静态审查修复报告",
+  "description": "整理既有静态审查证据与修复建议，不生成复现或利用内容。",
+  "content": "仅根据已有静态审查结果整理中文修复报告。摘要：{{summary}}；静态依据及建议：{{explanation}}；源码位置：{{file_path}}:{{line}}；分类：{{vulnerability_type}}。保留证据限制，不声称已完成运行验证。不调用工具、执行代码、发送网络请求或生成攻击/复现输入。输出Markdown包含问题概述、静态证据、影响条件、修复建议及人工复核事项。",
+  "outputFormat": {
+    "_reserved_report": "string"
+  }
+}

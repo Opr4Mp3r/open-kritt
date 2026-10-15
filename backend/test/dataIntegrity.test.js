@@ -11,7 +11,7 @@ import { validateScanJobLimit, ValidationError } from '../src/lib/validation.js'
 import { agentSkillMutationState, countAgentSkillScanUsage } from '../src/routes/agentSkills.js';
 import { summarizeCanonicalFindings } from '../src/routes/overview.js';
 import { countPostScriptScanUsage, postScriptMutationState } from '../src/routes/postScripts.js';
-import {
+import scansRouter, {
   ACTIVE_SCAN_STATUSES,
   assertModelOverridesAvailable,
   deleteScanIfSafe,
@@ -34,12 +34,33 @@ test('scan creation requests a launch choice only while another scan is active',
 });
 
 test('scan launch choices map immediate work to pending and queued work to queued', () => {
-  assert.deepEqual(scanLaunchDecision({ launchPolicy: 'immediate' }, 3), { kind: 'ready', status: 'pending' });
-  assert.deepEqual(scanLaunchDecision({ launch_policy: 'queue' }, 3), { kind: 'ready', status: 'queued' });
+  for (const activeScanCount of [0, 3]) {
+    assert.deepEqual(scanLaunchDecision({ launchPolicy: 'immediate' }, activeScanCount), {
+      kind: 'ready',
+      status: 'pending',
+    });
+    assert.deepEqual(scanLaunchDecision({ launch_policy: 'queue' }, activeScanCount), {
+      kind: 'ready',
+      status: 'queued',
+    });
+  }
   assert.throws(
     () => scanLaunchDecision({ launchPolicy: 'later' }, 1),
     (error) => error instanceof ValidationError && error.errors[0]?.field === 'launchPolicy'
   );
+});
+
+test('draft scans stay paused regardless of other active scans', () => {
+  for (const activeScanCount of [0, 3]) {
+    assert.deepEqual(scanLaunchDecision({ launchPolicy: 'draft' }, activeScanCount), {
+      kind: 'ready',
+      status: 'paused',
+    });
+    assert.deepEqual(scanLaunchDecision({ launch_policy: 'draft' }, activeScanCount), {
+      kind: 'ready',
+      status: 'paused',
+    });
+  }
 });
 
 test('referenced workflows cannot be rewritten or have their steps deleted', async () => {
@@ -919,6 +940,81 @@ test('scan creation locks configured workflows, post-scripts, and agent skills i
     ['agent_skills', 1n],
     ['agent_skills', 4n],
   ]);
+});
+
+test('scan creation keeps drafts paused and strips inherited completion state without mutating input', async (t) => {
+  const configuration = Object.freeze({
+    manually_completed: true,
+    audit_note: 'keep user configuration',
+    extra_settings: { repeat_runs: 2 },
+  });
+  const body = {
+    workflowId: '1',
+    postScriptId: '2',
+    repo_full: 'example/repository',
+    commit_sha: 'HEAD',
+    model: 'example/model',
+    model_provider: 'openrouter',
+    harness: 'codex',
+    thinking_effort: 'medium',
+    severity_ranker: 'Rank by impact.',
+    configuration,
+  };
+  const capturedCreate = new Error('scan creation captured');
+  let createdData;
+  let activeScanCount = 0;
+  const tx = {
+    $queryRaw: async () => [],
+    workflow: { findUnique: async () => ({ id: 1n, stepIds: [], extra: [] }) },
+    postScript: { findMany: async () => [{ id: 2n, content: '' }] },
+    agentSkill: { findMany: async () => [] },
+    scan: {
+      create: async ({ data }) => {
+        createdData = data;
+        // 截获持久化边界，不模拟与配置净化无关的响应聚合查询。
+        throw capturedCreate;
+      },
+    },
+  };
+  const previousKey = process.env.OPENROUTER_API_KEY;
+  const originalTransaction = prisma.$transaction;
+  const originalCount = prisma.scan.count;
+  process.env.OPENROUTER_API_KEY = 'test-key';
+  prisma.$transaction = async (operation) => operation(tx);
+  prisma.scan.count = async () => activeScanCount;
+  t.after(() => {
+    prisma.$transaction = originalTransaction;
+    prisma.scan.count = originalCount;
+    if (previousKey === undefined) delete process.env.OPENROUTER_API_KEY;
+    else process.env.OPENROUTER_API_KEY = previousKey;
+  });
+  const createScan = scansRouter.stack.find((layer) => layer.route?.path === '/' && layer.route.methods.post).route
+    .stack[0].handle;
+
+  for (const scenario of [
+    { launch: {}, active: 0, expectedStatus: 'pending' },
+    { launch: { launchPolicy: 'draft' }, active: 0, expectedStatus: 'paused' },
+    { launch: { launch_policy: 'draft' }, active: 3, expectedStatus: 'paused' },
+  ]) {
+    activeScanCount = scenario.active;
+    createdData = undefined;
+    await assert.rejects(
+      createScan({ body: { ...body, ...scenario.launch } }, {}, (error) => {
+        throw error;
+      }),
+      (error) => error === capturedCreate
+    );
+
+    assert.equal(createdData.status, scenario.expectedStatus);
+    // jobsStarted 使用数据库默认值 0；创建请求不占用任务执行次数。
+    assert.equal(createdData.jobsStarted ?? 0, 0);
+    assert.equal(Object.hasOwn(createdData.configuration, 'manually_completed'), false);
+    assert.equal(createdData.configuration.audit_note, configuration.audit_note);
+    assert.equal(createdData.configuration.extra_settings, configuration.extra_settings);
+    assert.notEqual(createdData.configuration, configuration);
+  }
+  assert.equal(body.configuration, configuration);
+  assert.equal(configuration.manually_completed, true);
 });
 
 test('scan extras include workflow and selected post-script prompt requirements', () => {

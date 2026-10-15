@@ -155,15 +155,15 @@ function parseEnvironmentText(text) {
 }
 
 export async function resolveHeadlessApiBase({ rootDir, env = process.env, apiUrl } = {}) {
+  const configured = `${apiUrl || env.OPEN_KRITT_API_URL || ''}`.trim();
   let projectEnvironment = {};
-  if (rootDir) {
+  if (rootDir && !configured) {
     try {
       projectEnvironment = parseEnvironmentText(await readFile(join(rootDir, '.env'), 'utf8'));
     } catch (error) {
       if (error?.code !== 'ENOENT') throw error;
     }
   }
-  const configured = `${apiUrl || env.OPEN_KRITT_API_URL || ''}`.trim();
   const rawBase = configured || `http://127.0.0.1:${projectEnvironment.BACKEND_PORT || '3002'}`;
   let parsed;
   try {
@@ -1046,6 +1046,11 @@ Usage:
   ./kritt-headless scan export <id> [destination] [--force]
   ./kritt-headless settings show
   ./kritt-headless settings set <key> <value>
+  ./kritt-headless api <GET|POST|PATCH|PUT|DELETE> /resource [--body file|-] [--dry-run] [--timeout-ms N]
+
+API mode returns JSON. Live writes are limited to paused scan drafts (launchPolicy=draft)
+and scan status changes to paused, stopped, or completed. Other writes require --dry-run.
+Pass request bodies through a file or stdin; never put credentials in command arguments.
 
 The backend must already be running (normally via ./kritt start). The API defaults
 to http://127.0.0.1:<BACKEND_PORT>/api. Set OPEN_KRITT_API_URL or pass
@@ -1070,6 +1075,11 @@ function defaultInteractivePrompter({ io, client }) {
 }
 
 export async function runHeadlessCli(argv, options = {}) {
+  const apiIndex = argv[0] === '--api-url' ? 2 : 0;
+  if (argv[apiIndex] === 'api') {
+    const { runApiCli } = await import('./kritt-api.mjs');
+    return runApiCli([...argv.slice(0, apiIndex), ...argv.slice(apiIndex + 1)], options);
+  }
   const io = options.io || defaultIo();
   const rootDir = options.rootDir || process.cwd();
   let parsed;

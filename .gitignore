@@ -72,6 +72,9 @@ tmp/
 # Local, temporary design/working docs — not part of the shipped product.
 DESIGN_*.md
 
+# Local agent context, operational notes, and scan records.
+/.claude/
+
 # ignore everything in the local_repos directory except the .gitkeep file in the folder
 local_repos/*
 !local_repos/.gitkeep

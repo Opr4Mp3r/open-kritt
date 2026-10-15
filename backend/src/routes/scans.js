@@ -40,7 +40,7 @@ const router = Router();
 const runFindingExport = createFindingExportLimiter();
 const DELETABLE_SCAN_STATUSES = new Set(['completed', 'stopped', 'failed', 'paused']);
 export const ACTIVE_SCAN_STATUSES = ['prewarming_cache', 'running', 'post_processing'];
-export const SCAN_LAUNCH_POLICIES = ['immediate', 'queue'];
+export const SCAN_LAUNCH_POLICIES = ['immediate', 'queue', 'draft'];
 export const DEFAULT_SCAN_PAGE_SIZE = 6;
 export const MAX_SCAN_PAGE_SIZE = 100;
 export const MAX_SUPPLEMENTAL_POST_SCRIPT_TARGETS = 10_000;
@@ -103,6 +103,7 @@ export function scanLaunchDecision(body, activeScanCount) {
       },
     ]);
   }
+  if (launchPolicy === 'draft') return { kind: 'ready', status: 'paused' };
   return { kind: 'ready', status: launchPolicy === 'queue' ? 'queued' : 'pending' };
 }
 

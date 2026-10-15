@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Kritt 操作员'
+  short_description: '通过自然语言管理本地 Kritt 配置、扫描草稿、任务状态及审查进度'
+  default_prompt: '使用 $kritt-operator 检查本地 Kritt，按我的要求配置并建立防御性源码审查草稿。'
